@@ -736,7 +736,7 @@ xSetScreenSaver(Display,Timeout) -> % Timeout of 0 disables screen saver
 	cmd(Display, eSetScreenSaver(Timeout, 0, 2, 2)). % No interval, default, default
 
 eSetScreenSaver(Timeout, Interval, Prefer_blanking, Allow_exposures) ->
-	req(107, <<Timeout:16,Interval:16,Prefer_blanking:16,Allow_exposures:16>>).
+	req(107, <<Timeout:16,Interval:16,Prefer_blanking:8,Allow_exposures:8,0:16>>).
 
 %%----------------------------------------------------------------------
 %% requests are *allways* a multiple of 4 bytes
