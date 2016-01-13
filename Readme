@@ -7,7 +7,7 @@ To help create new widgets there is a small program in util to convert DXF-files
 The DXF file can be created in QCAD (free) http://www.ribbonsoft.com/en/ , AUTOCAD, Google Sketchup Pro and other CAD systems. Entities with higher thickness will be drawn last. Closed polylines will be filled areas in ex11.
 
 
-Install with a fresh Raspbian (even Light will do). If you already have xserver and erlang installed, skip those steps:
+Install with a fresh Raspbian (even Light will do but remember to run raspi-config to expand your file system to fill your memory card). If you already have xserver and erlang installed, skip those steps:
 # Erlang
 sudo apt-get update
 sudo apt-get install wget
