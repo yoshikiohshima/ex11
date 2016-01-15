@@ -13,7 +13,7 @@ start() -> spawn(?MODULE,init,[]).
 init() ->
     {ok, Display} = ex11_lib:xStart("3.1"),
     xSetScreenSaver(Display,0),
-    Window = xCreateSimpleWindow(Display,0,0,?WT,?HT,?XC_arrow,xColor(Display,?black)),
+    Window = xCreateSimpleWindow(Display,50,50,?WT,?HT,?XC_arrow,xColor(Display,?black)),
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
     Black = xPen(Display,0,?white),
@@ -58,10 +58,10 @@ d_n(Display,Window,Black,[Head|Tail],X) ->
 d_n_n(_,_,_,[],X) -> X;
 d_n_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = case Head of
-		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+1,0),mkPoint(X+1,30),mkPoint(X,30)])), 1;
-		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+3,0),mkPoint(X+3,30),mkPoint(X,30)])), 3;
-		2 -> 1;
-		3 -> 3
+		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+5,0),mkPoint(X+5,200),mkPoint(X,200)])), 1;
+		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+15,0),mkPoint(X+15,200),mkPoint(X,200)])), 3;
+		2 -> 5;
+		3 -> 15
 	end,
 	d_n_n(Display,Window,Black,Tail,X+X1).
 
