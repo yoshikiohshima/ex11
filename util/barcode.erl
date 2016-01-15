@@ -16,14 +16,14 @@ init() ->
     Window = xCreateSimpleWindow(Display,50,50,?WT,?HT,?XC_arrow,xColor(Display,?black)),
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
-    Black = xPen(Display,0,?white),
+    White = xPen(Display,0,?white),
     xFlush(Display),
     self() ! {new,"1234567890"},
 	Figures = {[0,2,0,3,1,2,1,2,0],[1,2,0,3,0,2,0,2,1],[0,2,1,3,0,2,0,2,1],[1,2,1,3,0,2,0,2,0],[0,2,0,3,1,2,0,2,1],
 		[1,2,0,3,1,2,0,2,0],[0,2,1,3,1,2,0,2,0],[0,2,0,3,0,2,1,2,1],[1,2,0,3,0,2,1,2,0],[0,2,1,3,0,2,1,2,0]},
-    loop(Display,Window,Figures,Black).
+    loop(Display,Window,Figures,White).
 
-loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black) ->
+loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},White) ->
     receive
     	{new,Str} -> Codearray = lists:map(fun(Char) -> case Char of
 	    		48 -> Zero;
@@ -37,32 +37,32 @@ loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black) -
 	    		56 -> Eight;
 	    		57 -> Nine
 	    	end end,Str),
-    		draw_new(Display,Window,Codearray,Black),
-    		?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black);
+    		draw_new(Display,Window,Codearray,White),
+    		?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},White);
     	Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
-			?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black)
+			?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},White)
 	end.
 
-draw_new(Display,Window,Codearray,Black) ->
+draw_new(Display,Window,Codearray,White) ->
 	xClearArea(Window),
 	Codearray1 = [[0,3,0,2,1,2,1,2,0]|lists:reverse(Codearray)],
 	Codearray2 = [[0,3,0,2,1,2,1,2,0]|Codearray1],
-	d_n(Display,Window,Black,Codearray2,1).
+	d_n(Display,Window,White,Codearray2,1).
 
 d_n(Display,_,_,[],_) -> xFlush(Display);
-d_n(Display,Window,Black,[Head|Tail],X) ->
-	X1 = d_n_n(Display,Window,Black,Head,X),
+d_n(Display,Window,White,[Head|Tail],X) ->
+	X1 = d_n_n(Display,Window,White,Head,X),
 	xFlush(Display),
-	d_n(Display,Window,Black,Tail,X1).
+	d_n(Display,Window,White,Tail,X1).
 
 d_n_n(_,_,_,[],X) -> X;
-d_n_n(Display,Window,Black,[Head|Tail],X) ->
+d_n_n(Display,Window,White,[Head|Tail],X) ->
 	X1 = case Head of
-		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+2,0),mkPoint(X+2,200),mkPoint(X,200)])), 2;
-		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+6,0),mkPoint(X+6,200),mkPoint(X,200)])), 6;
-		2 -> 2;
-		3 -> 6
+		2 -> xDo(Display,eFillPoly(Window,White,convex,origin,[mkPoint(X,0),mkPoint(X+2,0),mkPoint(X+2,200),mkPoint(X,200)])), 2;
+		3 -> xDo(Display,eFillPoly(Window,White,convex,origin,[mkPoint(X,0),mkPoint(X+6,0),mkPoint(X+6,200),mkPoint(X,200)])), 6;
+		0 -> 2;
+		1 -> 6
 	end,
-	d_n_n(Display,Window,Black,Tail,X+X1).
+	d_n_n(Display,Window,White,Tail,X+X1).
 
 
