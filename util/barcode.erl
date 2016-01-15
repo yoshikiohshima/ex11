@@ -13,10 +13,10 @@ start() -> spawn(?MODULE,init,[]).
 init() ->
     {ok, Display} = ex11_lib:xStart("3.1"),
     xSetScreenSaver(Display,0),
-    Window = xCreateSimpleWindow(Display,50,50,?WT,?HT,?XC_arrow,xColor(Display,?white)),
+    Window = xCreateSimpleWindow(Display,0,0,?WT,?HT,?XC_arrow,xColor(Display,?white)),
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
-    Black = xPen(Display,0,?white),
+    Black = xPen(Display,0,?black),
     xFlush(Display),
     self() ! {new,"1234567890"},
 	Figures = {[0,2,0,3,1,2,1,2,0],[1,2,0,3,0,2,0,2,1],[0,2,1,3,0,2,0,2,1],[1,2,1,3,0,2,0,2,0],[0,2,0,3,1,2,0,2,1],
