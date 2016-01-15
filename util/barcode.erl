@@ -38,6 +38,7 @@ loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black) -
 	    		57 -> Nine
 	    	end end,Str),
     		draw_new(Display,Window,Codearray,Black),
+    		xFlush(Display),
     		?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black);
     	Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
 			?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black)
