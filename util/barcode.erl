@@ -53,7 +53,7 @@ d_n(Display,_,_,[],_) -> xFlush(Display);
 d_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = d_n_n(Display,Window,Black,Head,X),
 	xFlush(Display),
-	d_n(Display,Window,Black,Tail,X+X1).
+	d_n(Display,Window,Black,Tail,X1).
 
 d_n_n(_,_,_,[],X) -> X;
 d_n_n(Display,Window,Black,[Head|Tail],X) ->
