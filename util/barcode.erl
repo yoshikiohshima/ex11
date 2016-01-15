@@ -1,8 +1,8 @@
 -module(barcode).
 -author(skvamme).
 -export([start/0,init/0,loop/4]).
--define (WT,400).
--define (HT,400).
+-define (WT,800).
+-define (HT,480).
 -include("ex11_lib.hrl").
 -import(ex11_lib, [xDo/2,xPen/3,xClearArea/1,xFlush/1,xColor/2,eFillPoly/5,xCreateSimpleWindow/7,eMapWindow/1,mkPoint/2,xSetScreenSaver/2]).
 
