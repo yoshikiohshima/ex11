@@ -38,7 +38,6 @@ loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black) -
 	    		57 -> Nine
 	    	end end,Str),
     		draw_new(Display,Window,Codearray,Black),
-    		xFlush(Display),
     		?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black);
     	Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
 			?MODULE:loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black)
@@ -50,18 +49,19 @@ draw_new(Display,Window,Codearray,Black) ->
 	Codearray2 = [[0,3,0,2,1,2,1,2,0]|Codearray1],
 	d_n(Display,Window,Black,Codearray2,1).
 
-d_n(_,_,_,[],_) -> ok;
+d_n(Display,_,_,[],_) -> xFlush(Display);
 d_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = d_n_n(Display,Window,Black,Head,X),
+	xFlush(Display),
 	d_n(Display,Window,Black,Tail,X+X1).
 
 d_n_n(_,_,_,[],X) -> X;
 d_n_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = case Head of
-		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+5,0),mkPoint(X+5,200),mkPoint(X,200)])), 5;
-		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+15,0),mkPoint(X+15,200),mkPoint(X,200)])), 15;
-		2 -> 5;
-		3 -> 15
+		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+1,0),mkPoint(X+1,200),mkPoint(X,200)])), 1;
+		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+3,0),mkPoint(X+3,200),mkPoint(X,200)])), 3;
+		2 -> 1;
+		3 -> 3
 	end,
 	d_n_n(Display,Window,Black,Tail,X+X1).
 
