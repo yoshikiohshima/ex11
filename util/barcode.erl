@@ -53,7 +53,7 @@ draw_new(Display,Window,Codearray,Black) ->
 d_n(_,_,_,[],_) -> ok;
 d_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = d_n_n(Display,Window,Black,Head,X),
-	d_n(Display,Window,Black,Tail,X1).
+	d_n(Display,Window,Black,Tail,X+X1).
 
 d_n_n(_,_,_,[],X) -> X;
 d_n_n(Display,Window,Black,[Head|Tail],X) ->
