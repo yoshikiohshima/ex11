@@ -4,7 +4,7 @@
 -define (WT,120).
 -define (HT,120).
 -include("ex11_lib.hrl").
--import(ex11_lib, [ePutImage/9,xColor/2,xCreateSimpleWindow/10,eGetImage/5,mkArc/6,ePolyArc/3,eMapWindow/1,xDo/2,xFlush/1,eCopyArea/9,xCreateGC/2,
+-import(ex11_lib, [ePutImage/9,eChangeGC/2,xColor/2,xCreateSimpleWindow/10,eGetImage/5,mkArc/6,ePolyArc/3,eMapWindow/1,xDo/2,xFlush/1,eCopyArea/9,xCreateGC/2,
     ePolyLine/4,mkPoint/2]).
 
 make(Parent,Display,PWin,X,Y,Figure) -> 
