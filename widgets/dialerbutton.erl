@@ -4,7 +4,8 @@
 -define (WT,120).
 -define (HT,120).
 -include("ex11_lib.hrl").
--import(ex11_lib, [xColor/2,xCreateSimpleWindow/10,eGetImage/5,mkArc/6,ePolyArc/3,eMapWindow/1,xDo/2,xFlush/1,eCopyArea/9,xCreateGC/2]).
+-import(ex11_lib, [xColor/2,xCreateSimpleWindow/10,eGetImage/5,mkArc/6,ePolyArc/3,eMapWindow/1,xDo/2,xFlush/1,eCopyArea/9,xCreateGC/2,
+    ePolyLine/4,mkPoint/2]).
 
 make(Parent,Display,PWin,X,Y,Figure) -> 
     spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y,Figure]).
@@ -59,7 +60,7 @@ loop(Parent,Display,Win,Image,Bling,Redlist,F,Delay) ->
 % Draw the Bling in a new colour
 bling(Display,Win,Image,[Bling|B],[Red|R]) -> 
     xDo(Display,eCopyArea(Image,Win,Red,0,0,0,0,?WT,?HT)),
-    xDo(Display,ePolyArc(Win,Red,[Bling]),
+    xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
 	   [] -> self() ! {infinity}, fun() -> null end;
 	   _ -> fun() -> bling(Display,Win,Image,B,R) end
@@ -200,21 +201,6 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(85,33),mkPoint(85,89)])),
 %% END
 xFlush(Display);
 
-draw_figure(Display, Win, Pen1, _Red, Pen0, "dial") ->
-%% Title: mokophone_green.dxf
-% BoundingBox: 0 0 150 150
-xDo(Display,ePolyArc(Win, Pen1, [mkArc(45,49,101,101,-10950,-6991)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(31,15),mkPoint(119,15)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(102,15,33,33,-17280,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(135,31),mkPoint(135,119)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(102,102,33,33,0,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(119,135),mkPoint(31,135)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(15,102,33,33,-5760,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(15,119),mkPoint(15,31)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(15,15,33,33,-11520,-5760)])),
-%% END
-xFlush(Display);
-
 draw_figure(Display, Win,Pen0, "#") ->
 %% Title: mok_hash.dxf
 % BoundingBox: 0 0 150 150
@@ -225,22 +211,7 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(45,115),mkPoint(45,6)])),
 %% END
 xFlush(Display);
 
-draw_figure(Display, Win, Pen1, Pen0, _Green, "cancel") ->
-%% Title: mokophone_red.dxf
-% BoundingBox: 0 0 150 150
-xDo(Display,ePolyArc(Win, Pen1, [mkArc(24,63,101,101,-13785,-6991)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(31,15),mkPoint(119,15)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(102,15,33,33,-17280,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(135,31),mkPoint(135,119)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(102,102,33,33,0,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(119,135),mkPoint(31,135)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(15,102,33,33,-5760,-5760)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(15,119),mkPoint(15,31)])),
-xDo(Display,ePolyArc(Win, Pen0, [mkArc(15,15,33,33,-11520,-5760)])),
-%% END
-xFlush(Display);
-
-draw_figure(Display, Win, _, Pen0, _, "*") ->
+draw_figure(Display, Win, Pen0,"*") ->
 %% Title: mok_star.dxf
 % BoundingBox: 0 0 150 150
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(60,115),mkPoint(60,6)])),

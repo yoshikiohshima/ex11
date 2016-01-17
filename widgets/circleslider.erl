@@ -1,13 +1,14 @@
 -module(circleslider).
 -author(skvamme).
--export([make/5]).
+-export([make/5,init/5,loop/7]).
 -define (WT,340).
 -define (HT,340).
+-include("ex11_lib.hrl").
 -import(ex11_lib, [xColor/2,xCreateSimpleWindow/10,eMapWindow/1,xDo/2,xFlush/1,
     xCreateGC/2,ePolyArc/3,mkArc/6,eListFonts/2]).
 
 make(Parent,Display,PWin,X,Y) -> 
-    spawn_link(fun() -> init(Parent,Display,PWin,X,Y) end).
+    spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y]).
 
 init(Parent,Display,PWin,X,Y) ->
     Win = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,0,?XC_cross,xColor(Display,?black),
@@ -68,8 +69,7 @@ slider_pos(Point,[H|T]) ->
 		false -> slider_pos(Point,T)
 	end.
 
-draw_static(Display,Win,Pens) ->
-    #pen{white=Pen} = Pens,
+draw_static(Display,Win,Pen) ->
     xDo(Display,ePolyArc(Win, Pen, [mkArc(7,7,326,326,0,64*360)])),
     xDo(Display,ePolyArc(Win, Pen, [mkArc(106,106,127,127,0,64*360)])).
 

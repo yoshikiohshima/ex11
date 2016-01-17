@@ -1,7 +1,7 @@
 -module(main). 
 -author(skvamme).
 -export([start/0,init/0,loop/0]).
--import(ex11_lib,[xColor/2,xCreateSimpleWindow/7,eMapWindow/1,xDo/2,xFlush/1]).
+-import(ex11_lib,[xColor/2,xCreateSimpleWindow/7,eMapWindow/1,xDo/2,xFlush/1,xSetScreenSaver/2]).
 -include("ex11_lib.hrl").
 -define(WT,480).
 -define(HT,800).
@@ -28,7 +28,7 @@ init() ->
     dialerbutton:make(Pid, Display,Win, 340, 320,"9"),
     dialerbutton:make(Pid, Display,Win,  20, 440,"*"),
     dialerbutton:make(Pid, Display,Win, 180, 440,"0"),
-    dialerbutton:make(Pid, Display,Win, 340, 440,"#")];
+    dialerbutton:make(Pid, Display,Win, 340, 440,"#"),
 	loop().
 
 loop() ->
