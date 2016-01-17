@@ -33,7 +33,7 @@ init(Parent,Display,PWin,X,Y,Figure) ->
     Redlist = [Red10,Red9,Red8,Red7,Red6,Red5],
     Bling = lists:reverse([mkArc(0,0,120,120,0,64*360),mkArc(10,10,100,100,0,64*360),mkArc(20,20,80,80,0,64*360),
             mkArc(30,30,60,60,0,64*360),mkArc(40,40,40,40,0,64*360),mkArc(50,50,20,20,0,64*360)]),
-    eChangeGC(Black,[{plane_mask,16#00000001}]),
+    %eChangeGC(Black,[{plane_mask,16#00000001}]),
     {ok,Image} = xDo(Display, eGetImage(Win,?WT,?HT,0,0)),
     xFlush(Display),
     loop(Parent,Display,Win,Image,Bling,Redlist,Black,fun() -> null end,infinity).
@@ -64,7 +64,7 @@ bling(Display,Win,{Depth,Image},[Bling|B],[Red|R],Black) ->
     xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
 	   [] -> self() ! {infinity}, 
-            xDo(Display,ePutImage(Win, Black, ?WT, ?HT, 0, 0, 0, 16, Image)),
+            xDo(Display,ePutImage(Win, Black, ?WT, ?HT, 0, 0, 0, Depth, Image)),
             fun() -> null end;
 	   _ -> fun() -> bling(Display,Win,{Depth,Image},B,R,Black) end
     end.
