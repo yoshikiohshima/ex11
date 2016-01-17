@@ -43,10 +43,10 @@ loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,Delay) ->
             receive
                 {event,_, buttonRelease, _} ->
                     F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,1000)
             after 1000 -> 
                     F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,1000)
             end;
 	{infinity} -> ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,infinity);
 	{'EXIT', _Pid, _Why} -> true;
