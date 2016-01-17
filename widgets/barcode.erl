@@ -1,8 +1,8 @@
 -module(barcode).
 -author(skvamme).
 -export([make/5,init/5,loop/4]).
--define (WT,800).
--define (HT,480).
+-define (WT,300).
+-define (HT,200).
 -include("ex11_lib.hrl").
 -import(ex11_lib, [xDo/2,xPen/3,xClearArea/1,xFlush/1,xColor/2,eFillPoly/5,xCreateSimpleWindow/10,eMapWindow/1,mkPoint/2,xSetScreenSaver/2]).
 
@@ -57,10 +57,10 @@ d_n(Display,Window,Black,[Head|Tail],X) ->
 d_n_n(_,_,_,[],X) -> X;
 d_n_n(Display,Window,Black,[Head|Tail],X) ->
 	X1 = case Head of
-		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+3,0),mkPoint(X+3,200),mkPoint(X,200)])), 3;
-		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+9,0),mkPoint(X+9,200),mkPoint(X,200)])), 9;
-		2 -> 3;
-		3 -> 9
+		0 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+3,0),mkPoint(X+3,200),mkPoint(X,200)])), 2;
+		1 -> xDo(Display,eFillPoly(Window,Black,convex,origin,[mkPoint(X,0),mkPoint(X+9,0),mkPoint(X+9,200),mkPoint(X,200)])), 6;
+		2 -> 2;
+		3 -> 6
 	end,
 	d_n_n(Display,Window,Black,Tail,X+X1).
 
