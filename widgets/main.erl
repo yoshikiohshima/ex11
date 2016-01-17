@@ -18,18 +18,11 @@ init() ->
 %	circleslider:make(Pid,Display,Win,100,100),
 	BPid = barcode:make(Pid,Display,Win,20,20),
 	BPid ! {new,"1234567890"},
-%	dialerbutton:make(Pid, Display,Win,  20,  80,"1"),
-%	dialerbutton:make(Pid, Display,Win, 180,  80,"2"),
-%	dialerbutton:make(Pid, Display,Win, 340,  80,"3"),
-%	dialerbutton:make(Pid, Display,Win,  20, 200,"4"),
-%	dialerbutton:make(Pid, Display,Win, 180, 200,"5"),
-%	dialerbutton:make(Pid, Display,Win, 340, 200,"6"),
-    dialerbutton:make(Pid, Display,Win,  20, 320,"7"),
-    dialerbutton:make(Pid, Display,Win, 180, 320,"8"),
-    dialerbutton:make(Pid, Display,Win, 340, 320,"9"),
- %   dialerbutton:make(Pid, Display,Win,  20, 440,"*"),
- %   dialerbutton:make(Pid, Display,Win, 180, 440,"0"),
- %   dialerbutton:make(Pid, Display,Win, 340, 440,"#"),
+    dialerbutton:make(Pid, Display,Win,  20, 320,"3"),
+    dialerbutton:make(Pid, Display,Win, 180, 320,"4"),
+    dialerbutton:make(Pid, Display,Win, 340, 320,"5"),
+    dialerbutton:make(Pid, Display,Win, 500, 320,"6"),
+    dialerbutton:make(Pid, Display,Win, 660, 320,"7"),
 	loop().
 
 loop() ->
