@@ -11,7 +11,7 @@ make(Parent,Display,PWin,X,Y) ->
     spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y]).
 
 init(_Parent,Display,PWin,X,Y) ->
-   Win = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,0,?XC_cross,xColor(Display,?white),
+   Window = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,0,?XC_cross,xColor(Display,?white),
         ?EVENT_EXPOSURE bor ?EVENT_BUTTON_PRESS bor ?EVENT_BUTTON_RELEASE), 
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
