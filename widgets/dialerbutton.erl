@@ -62,7 +62,9 @@ bling(Display,Win,Image,[Bling|B],[Red|R]) ->
     xDo(Display,ePutImage(Win, Red, ?WT, ?HT, 0, 0, 0, 16, Image)),
     xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
-	   [] -> self() ! {infinity}, fun() -> null end;
+	   [] -> self() ! {infinity}, 
+            xDo(Display,ePutImage(Win, Red, ?WT, ?HT, 0, 0, 0, 16, Image)),
+            fun() -> null end;
 	   _ -> fun() -> bling(Display,Win,Image,B,R) end
     end.
 
