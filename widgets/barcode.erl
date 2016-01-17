@@ -1,19 +1,17 @@
 -module(barcode).
 -author(skvamme).
--export([start/0,init/0,loop/4]).
+-export([make/0,init/0,loop/4]).
 -define (WT,800).
 -define (HT,480).
 -include("ex11_lib.hrl").
 -import(ex11_lib, [xDo/2,xPen/3,xClearArea/1,xFlush/1,xColor/2,eFillPoly/5,xCreateSimpleWindow/7,eMapWindow/1,mkPoint/2,xSetScreenSaver/2]).
 
 % 0 narrow black % 1 wide black % 2 narrow white % 3 wide white
+make(Parent,Display,PWin,X,Y) -> 
+    spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y]).
 
-start() -> spawn(?MODULE,init,[]).
-
-init() ->
-    {ok, Display} = ex11_lib:xStart("3.1"),
-    xSetScreenSaver(Display,0),
-    Window = xCreateSimpleWindow(Display,0,0,?WT,?HT,?XC_arrow,xColor(Display,?white)),
+init(Parent,Display,PWin,X,Y) ->
+    Window = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,?XC_arrow,xColor(Display,?white)),
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
     Black = xPen(Display,0,?black),
