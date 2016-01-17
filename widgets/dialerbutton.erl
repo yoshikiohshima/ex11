@@ -35,37 +35,37 @@ init(Parent,Display,PWin,X,Y,Figure) ->
             mkArc(30,30,60,60,0,64*360),mkArc(40,40,40,40,0,64*360),mkArc(50,50,20,20,0,64*360)]),
     {ok,Image} = xDo(Display, eGetImage(Win,?WT,?HT,0,0)),
     xFlush(Display),
-    loop(Parent,Display,Win,Image,Bling,Redlist,fun() -> null end,infinity).
+    loop(Parent,Display,Win,Image,Bling,Redlist,Black,fun() -> null end,infinity).
 
-loop(Parent,Display,Win,Image,Bling,Redlist,F,Delay) ->
+loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,Delay) ->
     receive
         {event,_, buttonPress, _} ->
             receive
                 {event,_, buttonRelease, _} ->
-                    F1 = fun() -> bling(Display,Win,Image,Bling,Redlist) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,F1,50)
+                    F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
             after 1000 -> 
-                    F1 = fun() -> bling(Display,Win,Image,Bling,Redlist) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,F1,50)
+                    F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
             end;
-	{infinity} -> ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,F,infinity);
+	{infinity} -> ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,infinity);
 	{'EXIT', _Pid, _Why} -> true;
-	_Any -> ?MODULE:loop(Parent,Display, Win,Image,Bling,Redlist,F,Delay)
+	_Any -> ?MODULE:loop(Parent,Display, Win,Image,Bling,Redlist,Black,F,Delay)
 	after Delay ->
 		F1 = F(),
 		xFlush(Display),
-		?MODULE:loop(Parent,Display, Win,Image,Bling,Redlist,F1,Delay)
+		?MODULE:loop(Parent,Display, Win,Image,Bling,Redlist,Black,F1,Delay)
    end.
 
 % Draw the Bling in a new colour
-bling(Display,Win,{Depth,Image},[Bling|B],[Red|R]) -> 
-    xDo(Display,ePutImage(Win, Red, ?WT, ?HT, 0, 0, 0, Depth, Image)),
+bling(Display,Win,{Depth,Image},[Bling|B],[Red|R],Black) -> 
+    xDo(Display,ePutImage(Win, Black, ?WT, ?HT, 0, 0, 0, Depth, Image)),
     xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
 	   [] -> self() ! {infinity}, 
             xDo(Display,ePutImage(Win, Red, ?WT, ?HT, 0, 0, 0, 16, Image)),
             fun() -> null end;
-	   _ -> fun() -> bling(Display,Win,{Depth,Image},B,R) end
+	   _ -> fun() -> bling(Display,Win,{Depth,Image},B,R,Black) end
     end.
 
 
