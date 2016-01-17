@@ -60,7 +60,7 @@ loop(Parent,Display,Win,Image,Bling,Redlist,BlingGC,F,Delay) ->
 
 % Draw the Bling in a new colour
 bling(Display,Win,{Depth,Image},[Bling|B],[Red|R],BlingGC) -> 
-    xDo(Display,ePutImage(Win, BlingGC, ?WT, ?HT, 0, 0, 0, Depth, Image)),
+    xDo(Display,ePutImage(Win, Red, ?WT, ?HT, 0, 0, 0, Depth, Image)),
     xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
 	   [] -> self() ! {infinity}, 
