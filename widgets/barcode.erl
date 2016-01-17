@@ -1,7 +1,7 @@
 -module(barcode).
 -author(skvamme).
 -export([make/5,init/5,loop/4]).
--define (WT,300).
+-define (WT,350).
 -define (HT,200).
 -define (SPACE,2).
 -include("ex11_lib.hrl").
@@ -18,7 +18,6 @@ init(_Parent,Display,PWin,X,Y) ->
     xFlush(Display),
     Black = xPen(Display,0,?black),
     xFlush(Display),
-    self() ! {new,"1234567890"},
 	Figures = {[0,2,0,3,1,2,1,2,0],[1,2,0,3,0,2,0,2,1],[0,2,1,3,0,2,0,2,1],[1,2,1,3,0,2,0,2,0],[0,2,0,3,1,2,0,2,1],
 		[1,2,0,3,1,2,0,2,0],[0,2,1,3,1,2,0,2,0],[0,2,0,3,0,2,1,2,1],[1,2,0,3,0,2,1,2,0],[0,2,1,3,0,2,1,2,0]},
     loop(Display,Window,Figures,Black).
@@ -46,7 +45,7 @@ loop(Display,Window,{Zero,One,Two,Three,Four,Five,Six,Seven,Eight,Nine},Black) -
 draw_new(Display,Window,Codearray,Black) ->
 	xClearArea(Window),
 	Codearray1 = [[0,3,0,2,1,2,1,2,0]|lists:reverse(Codearray)],
-	Codearray2 = [[0,3,0,2,1,2,1,2,0]|Codearray1],
+	Codearray2 = [[0,3,0,2,1,2,1,2,0]|lists:reverse(Codearray1)],
 	d_n(Display,Window,Black,Codearray2,1).
 
 d_n(Display,_,_,[],_) -> xFlush(Display);
