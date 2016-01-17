@@ -1,6 +1,6 @@
 -module(dialerbutton).
 -author(skvamme).
--export([make/6,init/6,loop/8]).
+-export([make/6,init/6,loop/9]).
 -define (WT,120).
 -define (HT,120).
 -include("ex11_lib.hrl").
