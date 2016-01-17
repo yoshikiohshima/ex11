@@ -59,7 +59,8 @@ loop(Parent,Display,Win,Image,Bling,Redlist,F,Delay) ->
 
 % Draw the Bling in a new colour
 bling(Display,Win,Image,[Bling|B],[Red|R]) -> 
-    eCopyArea(Image,Win,Red,0,0,0,0,?WT,?HT),
+    ePutImage(Win, Red, ?WT, ?HT, 0, 0, Pad, 16, Image),
+    %eCopyArea(Image,Win,Red,0,0,0,0,?WT,?HT),
     xDo(Display,ePolyArc(Win,Red,[Bling])),
     case B of
 	   [] -> self() ! {infinity}, fun() -> null end;
