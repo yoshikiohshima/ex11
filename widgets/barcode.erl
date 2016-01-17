@@ -4,14 +4,15 @@
 -define (WT,800).
 -define (HT,480).
 -include("ex11_lib.hrl").
--import(ex11_lib, [xDo/2,xPen/3,xClearArea/1,xFlush/1,xColor/2,eFillPoly/5,xCreateSimpleWindow/8,eMapWindow/1,mkPoint/2,xSetScreenSaver/2]).
+-import(ex11_lib, [xDo/2,xPen/3,xClearArea/1,xFlush/1,xColor/2,eFillPoly/5,xCreateSimpleWindow/10,eMapWindow/1,mkPoint/2,xSetScreenSaver/2]).
 
 % 0 narrow black % 1 wide black % 2 narrow white % 3 wide white
 make(Parent,Display,PWin,X,Y) -> 
     spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y]).
 
 init(_Parent,Display,PWin,X,Y) ->
-    Window = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,?XC_arrow,xColor(Display,?white)),
+   Win = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,0,?XC_cross,xColor(Display,?white),
+        ?EVENT_EXPOSURE bor ?EVENT_BUTTON_PRESS bor ?EVENT_BUTTON_RELEASE), 
     xDo(Display, eMapWindow(Window)),
     xFlush(Display),
     Black = xPen(Display,0,?black),
