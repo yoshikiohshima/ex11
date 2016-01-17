@@ -25,10 +25,10 @@ init(Parent,Display,PWin,X,Y,Figure) ->
     % Red3 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#800000)}]),
     % Red4 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#900000)}]),	
     Red5 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FFFFFF)}]),
-    Red6 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FFCCCC)}]),
-    Red7 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FF9999)}]),
-    Red8 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FF6666)}]),
-    Red9 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FF3333)}]),
+    Red6 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FFEEEE)}]),
+    Red7 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FFDDDD)}]),
+    Red8 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FFCCCC)}]),
+    Red9 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FF6666)}]),
     Red10 = xCreateGC(Display, [{line_width,20},{foreground, xColor(Display, 16#FF0000)}]),
     Redlist = [Red10,Red9,Red8,Red7,Red6,Red5],
     Bling = lists:reverse([mkArc(0,0,120,120,0,64*360),mkArc(10,10,100,100,0,64*360),mkArc(20,20,80,80,0,64*360),
@@ -43,10 +43,10 @@ loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,Delay) ->
             receive
                 {event,_, buttonRelease, _} ->
                     F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,1000)
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
             after 1000 -> 
                     F1 = fun() -> bling(Display,Win,Image,Bling,Redlist,Black) end,
-		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,1000)
+		            ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F1,50)
             end;
 	{infinity} -> ?MODULE:loop(Parent,Display,Win,Image,Bling,Redlist,Black,F,infinity);
 	{'EXIT', _Pid, _Why} -> true;
