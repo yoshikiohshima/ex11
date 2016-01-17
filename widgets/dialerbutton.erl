@@ -33,7 +33,7 @@ init(Parent,Display,PWin,X,Y,Figure) ->
     Redlist = [Red0,Red1,Red2,Red3,Red4,Red5,Red6,Red7,Red8,Red9,Red10],
     Bling = [mkArc(0,0,120,120,0,64*360),mkArc(10,10,100,100,0,64*360),mkArc(20,20,80,80,0,64*360),
             mkArc(30,30,60,60,0,64*360),mkArc(40,40,40,40,0,64*360),mkArc(50,50,20,20,0,64*360)],
-    {_Depth, Image} = eGetImage(Win,?WT,?HT,0,0),
+    {ok,{_,Image}} = xDo(Display, eGetImage(Win,?WT,?HT,0,0)),
     xFlush(Display),
     loop(Parent,Display,Win,Image,Bling,Redlist,fun() -> null end,infinity).
 
