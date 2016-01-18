@@ -57,7 +57,8 @@ do_figure(Fig,Dot,Display,Win,Pen0) ->
 			seg_30(Display,Win,Pen0),seg_40(Display,Win,Pen0),seg_50(Display,Win,Pen0),
 			seg_60(Display,Win,Pen0);
 		9 -> seg_20(Display,Win,Pen0),seg_30(Display,Win,Pen0),seg_40(Display,Win,Pen0),
-			seg_50(Display,Win,Pen0),seg_60(Display,Win,Pen0)
+			seg_50(Display,Win,Pen0),seg_60(Display,Win,Pen0);
+		"-" -> seg_30(Display,Win,Pen0)
 	end,
 	case Dot of
 		true -> seg_dot(Display,Win,Pen0);
@@ -68,7 +69,9 @@ do_figure(Fig,Dot,Display,Win,Pen0) ->
 %% Title: "7seg.dxf"
 % BoundingBox: 0 0 80 120
 seg_dot(Display,Win,Pen0) ->
-	xDo(Display,ePolyFillArc(Win, Pen0, [mkArc(67,110,6,6,0,64*360)])).
+%	xDo(Display,ePolyFillArc(Win, Pen0, [mkArc(67,110,6,6,0,64*360)])).
+	xDo(Display,ePolyFillArc(Win, Pen0, [mkArc(64,104,12,12,0,64*360)])).
+
 
 seg_0(Display,Win,Pen0) ->
 xDo(Display,eFillPoly(Win, Pen0, complex, origin, [mkPoint(55,111),
