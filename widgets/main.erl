@@ -20,12 +20,12 @@ init() ->
 
 loop(Pid,Port,Display,Win,Ready,Widgets) ->
     receive
-    	{event,_,configureNotify,_} when Ready == false -> % The window is ready for use
+    	{event,_,expose,expose} when Ready == false -> % The window is ready for use
 			Digit1000 = sevenseg:make(Pid,Display,Win,20,20), % Place the four sevensegments
 			Digit100 = sevenseg:make(Pid,Display,Win,100,20),
 			Digit10 = sevenseg:make(Pid,Display,Win,180,20),
 			Digit1 = sevenseg:make(Pid,Display,Win,260,20),
-			show_off(9999,Digit1000,Digit100,Digit10,Digit1),
+			show_off("9999",Digit1000,Digit100,Digit10,Digit1),
 			timer:send_interval(5000, poll),
 		    ?MODULE:loop(Pid,Port,Display,Win,true,{Digit1000,Digit100,Digit10,Digit1});
 		poll -> Port ! {self(), {command, "w\n"}},
