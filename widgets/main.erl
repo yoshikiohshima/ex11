@@ -33,6 +33,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 		{Port,{data,{eol,Data1}}} ->	                        % Data from ATLAST Forth
 			{Digit1000,Digit100,Digit10,Digit1} = Widgets,
 			show_off(Data1,Digit1000,Digit100,Digit10,Digit1),
+			xFlush(Display),
 			?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
 		Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
 			?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets)
