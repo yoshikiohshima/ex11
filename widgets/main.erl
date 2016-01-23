@@ -28,7 +28,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 			show_off(9999,Digit1000,Digit100,Digit10,Digit1),
 			timer:send_interval(5000, poll),
 		    ?MODULE:loop(Pid,Port,Display,Win,true,{Digit1000,Digit100,Digit10,Digit1});
-		poll -> poll -> Port ! {self(), {command, "w\n"}},
+		poll -> Port ! {self(), {command, "w\n"}},
 			 ?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
 		{Port,{data,{eol,Data1}}} ->	                        % Data from ATLAST Forth
 			{Digit1000,Digit100,Digit10,Digit1} = Widgets,
