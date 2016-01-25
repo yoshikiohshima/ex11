@@ -42,7 +42,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 
 show_off(Number,Digit10000,Digit1000,Digit100,Digit10,Digit1) ->
 	Ilist = string:strip(Number),
-	io:format("~p Ilist is: ~p~n",[?MODULE, Ilist]),
+	io:format("~n~p Load is: ~p at ~p UTC",[?MODULE, Ilist, time()]),
 	case Ilist of
 		[A] -> Digit1 ! {new,[A],false}, Digit10000 ! Digit1000 ! Digit100 ! Digit10 ! {clear};
 		[A,B] -> Digit10 ! {new,[A],false}, Digit1 ! {new,[B],false}, Digit10000 ! Digit1000 ! Digit100 ! {clear};
