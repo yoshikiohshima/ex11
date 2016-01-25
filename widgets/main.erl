@@ -31,7 +31,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 		    ?MODULE:loop(Pid,Port,Display,Win,true,{Digit10000,Digit1000,Digit100,Digit10,Digit1});
 		poll -> Port ! {self(), {command, "w\n"}},
 			 ?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
-		{Port,{data,{eol,Data1}}} ->	                        % Data from ATLAST Forth
+		{Port,{data,{eol,Data1}}} when Data1 /= [] ->	                        % Data from ATLAST Forth
 			{Digit10000,Digit1000,Digit100,Digit10,Digit1} = Widgets,
 			show_off(Data1,Digit10000,Digit1000,Digit100,Digit10,Digit1),
 			xFlush(Display),
