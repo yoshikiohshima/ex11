@@ -44,10 +44,10 @@ show_off(Number,Digit10000,Digit1000,Digit100,Digit10,Digit1) ->
 	Ilist = string:strip(Number),
 	io:format("~p Ilist is: ~p~n",[?MODULE, Ilist]),
 	case Ilist of
-		[A] -> Digit1 ! {new,[A],false}, Digit1000 ! Digit100 ! Digit10 ! {clear};
-		[A,B] -> Digit10 ! {new,[A],false}, Digit1 ! {new,[B],false}, Digit1000 ! Digit100 ! {clear};
-		[A,B,C] -> Digit100 ! {new,[A],false}, Digit10 ! {new,[B],false}, Digit1 ! {new,[C],false}, Digit1000 ! {clear};
-		[A,B,C,D] -> Digit1000 ! {new,[A],false}, Digit100 ! {new,[B],false}, Digit10 ! {new,[C],false}, Digit1 ! {new,[D],false};
+		[A] -> Digit1 ! {new,[A],false}, Digit10000 ! Digit1000 ! Digit100 ! Digit10 ! {clear};
+		[A,B] -> Digit10 ! {new,[A],false}, Digit1 ! {new,[B],false}, Digit10000 ! Digit1000 ! Digit100 ! {clear};
+		[A,B,C] -> Digit100 ! {new,[A],false}, Digit10 ! {new,[B],false}, Digit1 ! {new,[C],false}, Digit10000 ! Digit1000 ! {clear};
+		[A,B,C,D] -> Digit1000 ! {new,[A],false}, Digit100 ! {new,[B],false}, Digit10 ! {new,[C],false}, Digit1 ! {new,[D],false}, Digit10000 ! {clear};
 		[A,B,C,D,E] -> Digit10000 ! {new,[A],false}, Digit1000 ! {new,[B],false}, Digit100 ! {new,[C],false}, Digit10 ! {new,[D],false}, Digit1 ! {new,[E],false}
 	end.
 
