@@ -31,7 +31,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 			show_off("88888",Widgets1),
 			timer:send_interval(5000, poll),
 		    ?MODULE:loop(Pid,Port,Display,Win,true,Widgets1);
-		poll -> Port ! {self(), {command, "w\n"}},
+		poll when is_port(Port) -> Port ! {self(), {command, "w\n"}},
 			 ?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
 		{Port,{data,{eol,Data1}}} when Data1 /= [] ->	              % Data from ATLAST Forth
 			show_off(Data1,Widgets),
