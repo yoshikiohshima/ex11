@@ -18,7 +18,7 @@ init(Parent,Display,PWin,X,Y) ->
         ?EVENT_BUTTON_PRESS bor ?EVENT_BUTTON_RELEASE bor ?EVENT_STRUCTURE_NOTIFY), 
     xDo(Display, eMapWindow(Win)),
     xFlush(Display),        
-    Pen0 = xCreateGC(Display, [{function,copy},{line_width,10},{foreground, xColor(Display, 16#FF0000)}]),  
+    Pen0 = xCreateGC(Display, [{function,copy},{line_width,5},{foreground, xColor(Display, ?white)}]),  
     xFlush(Display),
     Y1 = sevensegsmall:make(Pid,Display,Win,0,431), % Place the sevensegments
     Y11 = sevensegsmall:make(Pid,Display,Win,40,431),
@@ -60,6 +60,5 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,281),mkPoint(120,281)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,221),mkPoint(120,221)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,161),mkPoint(120,161)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,101),mkPoint(120,101)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,41),mkPoint(120,41)])),
-xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(0,431),mkPoint(789,431)])).
+xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,41),mkPoint(120,41)])).
 %% END

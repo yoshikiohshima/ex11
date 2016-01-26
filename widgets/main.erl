@@ -22,10 +22,10 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
     receive
     	{event,_,expose,expose} when Ready == false -> % The window is ready for use
 			_Graph = graph:make(Pid,Display,Win,0,0), % Place the graph
-			Digit10000 = sevensegsmall:make(Pid,Display,Win,20,20), % Place the sevensegments
-			Digit1000 = sevensegsmall:make(Pid,Display,Win,100,20), 
-			Digit100 = sevensegsmall:make(Pid,Display,Win,180,20),
-			Digit10 = sevensegsmall:make(Pid,Display,Win,260,20),
+			Digit10000 = sevensegsmall:make(Pid,Display,Win,180,20), % Place the sevensegments
+			Digit1000 = sevensegsmall:make(Pid,Display,Win,220,20), 
+			Digit100 = sevensegsmall:make(Pid,Display,Win,260,20),
+			Digit10 = sevensegsmall:make(Pid,Display,Win,300,20),
 			Digit1 = sevensegsmall:make(Pid,Display,Win,340,20),
 			Widgets1 = {Digit10000,Digit1000,Digit100,Digit10,Digit1},
 			show_off("88888",Widgets1),
