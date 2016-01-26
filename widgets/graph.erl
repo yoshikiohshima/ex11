@@ -36,6 +36,7 @@ init(Parent,Display,PWin,X,Y) ->
     Y77 = sevensegsmall:make(Pid,Display,Win,40,71),
     Y1 ! Y11 ! Y2 ! Y22 ! Y3 ! Y33 ! Y4 ! Y44 ! Y5 ! Y55 ! Y6 ! Y66 ! Y7 ! Y77 ! {new,8,false},
     draw_static(Display,Win,Pen0),
+    xFlush(Display),
     loop(Parent,Display,Win,Pen0).
 
 loop(Parent,Display,Win,Pen0) ->
