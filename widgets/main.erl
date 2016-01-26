@@ -26,21 +26,21 @@ loop(Pid,Port,Display,Win,Ready,Widgets) ->
 			Digit100 = sevenseg:make(Pid,Display,Win,180,20),
 			Digit10 = sevenseg:make(Pid,Display,Win,260,20),
 			Digit1 = sevenseg:make(Pid,Display,Win,340,20),
-			show_off("9999",Digit10000,Digit1000,Digit100,Digit10,Digit1),
+			Widgets1 = {Digit10000,Digit1000,Digit100,Digit10,Digit1},
+			show_off("88888",Widgets1),
 			timer:send_interval(5000, poll),
-		    ?MODULE:loop(Pid,Port,Display,Win,true,{Digit10000,Digit1000,Digit100,Digit10,Digit1});
+		    ?MODULE:loop(Pid,Port,Display,Win,true,Widgets1);
 		poll -> Port ! {self(), {command, "w\n"}},
 			 ?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
-		{Port,{data,{eol,Data1}}} when Data1 /= [] ->	                        % Data from ATLAST Forth
-			{Digit10000,Digit1000,Digit100,Digit10,Digit1} = Widgets,
-			show_off(Data1,Digit10000,Digit1000,Digit100,Digit10,Digit1),
+		{Port,{data,{eol,Data1}}} when Data1 /= [] ->	              % Data from ATLAST Forth
+			show_off(Data1,Widgets),
 			xFlush(Display),
 			?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets);
 		Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
 			?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets)
 	end.
 
-show_off(Number,Digit10000,Digit1000,Digit100,Digit10,Digit1) ->
+show_off(Number,{Digit10000,Digit1000,Digit100,Digit10,Digit1}) ->
 	Ilist = string:strip(Number),
 	io:format("~n~p Load is: ~p at ~p UTC",[?MODULE, Ilist, time()]),
 	case Ilist of
