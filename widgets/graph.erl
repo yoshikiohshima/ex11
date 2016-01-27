@@ -18,7 +18,7 @@ init(Parent,Display,PWin,X,Y) ->
         ?EVENT_BUTTON_PRESS bor ?EVENT_BUTTON_RELEASE bor ?EVENT_STRUCTURE_NOTIFY), 
     xDo(Display, eMapWindow(Win)),
     xFlush(Display),
-    put(x,80),        
+    put(x,120),        
     Pen0 = xCreateGC(Display, [{function,copy},{line_width,3},{foreground, xColor(Display, ?white)}]),  
     xFlush(Display),
     Y1 = sevensegsmall:make(Pid,Display,Win,0,371), % Place the sevensegments
@@ -50,8 +50,12 @@ init(Parent,Display,PWin,X,Y) ->
 loop(Parent,Display,Win,Pen0,Data) ->
     receive
         {new,D} ->
-            draw_dynamic(Display,Win,Pen0,[D|Data]),
-            ?MODULE:loop(Parent,Display,Win,Pen0,[D|Data]);
+            Data2 = case length(Data) of
+                L when L < 40 -> [D|Data];
+                _ -> Data1 = lists:reverse(tl(lists:reverse(Data))), [D|Data1]
+            end,
+            draw_dynamic(Display,Win,Pen0,Data2),
+           ?MODULE:loop(Parent,Display,Win,Pen0,Data2);
     	{clear} -> 
             xClearArea(Display,Win),
     		xFlush(Display),
@@ -76,11 +80,11 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,41),mkPoint(120,41)])).
 %% END
 
 draw_dynamic(Display,Win,Pen0,Data) ->
-    Points = lists:map(fun(D) -> X = get(x), X1 = X + 10, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end,
-        lists:reverse(Data)),
+    Data1 = lists:reverse(Data),
+    Points = lists:map(fun(D) -> X = get(x), X1 = X + 10, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end, Data1),
     xDo(Display,ePolyLine(Win, Pen0, origin, Points)),
     xFlush(Display),
-    put(x,80).
+    put(x,120).
 
 
 
