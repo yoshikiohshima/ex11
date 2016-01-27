@@ -29,7 +29,7 @@ loop(Pid,Port,Display,Win,Ready,Widgets,Graph) ->
 			Digit1 = sevensegsmall:make(Pid,Display,Win,340,20),
 			Widgets1 = {Digit10000,Digit1000,Digit100,Digit10,Digit1},
 			show_off("88888",Widgets1),
-			timer:send_interval(60000, poll),
+			timer:send_interval(5000, poll),
 		    ?MODULE:loop(Pid,Port,Display,Win,true,Widgets1,Graph1);
 		poll when is_port(Port) -> Port ! {self(), {command, "w\n"}},
 			 ?MODULE:loop(Pid,Port,Display,Win,Ready,Widgets,Graph);
