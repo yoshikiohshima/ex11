@@ -51,13 +51,14 @@ loop(Parent,Display,Win,Pen0,Data) ->
     receive
         {new,D} ->
             draw_dynamic(Display,Win,Pen0,[D|Data]),
-            ?MODULE:loop(Parent,Display,Win,Pen0);
-    	{clear} -> xClearArea(Display,Win),
+            ?MODULE:loop(Parent,Display,Win,Pen0,[D|Data]);
+    	{clear} -> 
+            xClearArea(Display,Win),
     		xFlush(Display),
-    		?MODULE:loop(Parent,Display,Win,Pen0);
+    		?MODULE:loop(Parent,Display,Win,Pen0,Data);
  		{'EXIT', _Pid, _Why} -> true;
 		Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
-            ?MODULE:loop(Parent,Display,Win,Pen0)
+            ?MODULE:loop(Parent,Display,Win,Pen0,Data)
 	end.
 
 %% Processing ascii file: "graph.dxf"
