@@ -20,6 +20,7 @@ init(Parent,Display,PWin,X,Y) ->
     xFlush(Display),
     put(x,120),        
     Pen0 = xCreateGC(Display, [{function,copy},{line_width,3},{foreground, xColor(Display, ?white)}]),  
+    Pen1 = xCreateGC(Display, [{function,copy},{line_width,0},{foreground, xColor(Display, ?white)}]),  
     xFlush(Display),
     Y1 = sevensegsmall:make(Pid,Display,Win,0,371), % Place the sevensegments
     Y11 = sevensegsmall:make(Pid,Display,Win,40,371),
@@ -45,26 +46,27 @@ init(Parent,Display,PWin,X,Y) ->
     Y7 ! {new,1,false}, Y77 ! {new,4,false},
     draw_static(Display,Win,Pen0),
     xFlush(Display),
-    loop(Parent,Display,Win,Pen0,[]).
+    loop(Parent,Display,Win,{Pen0,Pen1},[]).
 
-loop(Parent,Display,Win,Pen0,Data) ->
+loop(Parent,Display,Win,Pen,Data) ->
     receive
         {new,D} ->
             Data2 = case length(Data) of
                 L when L < 600 -> [D|Data];
                 _ -> Data1 = lists:reverse(tl(lists:reverse(Data))), [D|Data1]
             end,
+            {Pen0,Pen1} = Pen,
             xClearArea(Display,Win),
             draw_static(Display,Win,Pen0),
-            draw_dynamic(Display,Win,Pen0,Data2),
-           ?MODULE:loop(Parent,Display,Win,Pen0,Data2);
+            draw_dynamic(Display,Win,Pen1,Data2),
+           ?MODULE:loop(Parent,Display,Win,Pen,Data2);
     	{clear} -> 
             xClearArea(Display,Win),
     		xFlush(Display),
-    		?MODULE:loop(Parent,Display,Win,Pen0,Data);
+    		?MODULE:loop(Parent,Display,Win,Pen,Data);
  		{'EXIT', _Pid, _Why} -> true;
 		Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
-            ?MODULE:loop(Parent,Display,Win,Pen0,Data)
+            ?MODULE:loop(Parent,Display,Win,Pen,Data)
 	end.
 
 %% Processing ascii file: "graph.dxf"
