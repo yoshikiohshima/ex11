@@ -51,7 +51,7 @@ loop(Parent,Display,Win,Pen0,Data) ->
     receive
         {new,D} ->
             Data2 = case length(Data) of
-                L when L < 40 -> [D|Data];
+                L when L < 600 -> [D|Data];
                 _ -> Data1 = lists:reverse(tl(lists:reverse(Data))), [D|Data1]
             end,
             xClearArea(Display,Win),
@@ -83,7 +83,7 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,41),mkPoint(120,41)])).
 
 draw_dynamic(Display,Win,Pen0,Data) ->
     Data1 = lists:reverse(Data),
-    Points = lists:map(fun(D) -> X = get(x), X1 = X + 10, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end, Data1),
+    Points = lists:map(fun(D) -> X = get(x), X1 = X + 1, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end, Data1),
     xDo(Display,ePolyLine(Win, Pen0, origin, Points)),
     xFlush(Display),
     put(x,120).
