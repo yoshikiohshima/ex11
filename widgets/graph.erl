@@ -76,7 +76,8 @@ xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(80,41),mkPoint(120,41)])).
 %% END
 
 draw_dynamic(Display,Win,Pen0,Data) ->
-    Points = lists:map(fun(D) -> X = get(x), X1 = X + 10, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end,Data),
+    Points = lists:map(fun(D) -> X = get(x), X1 = X + 10, put(x,X1), D1 = list_to_integer(string:strip(D)) div 20, mkPoint(X,480 - D1) end,
+        lists:reverse(Data)),
     xDo(Display,ePolyLine(Win, Pen0, origin, Points)),
     xFlush(Display),
     put(x,80).
