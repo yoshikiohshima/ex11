@@ -54,6 +54,8 @@ loop(Parent,Display,Win,Pen0,Data) ->
                 L when L < 40 -> [D|Data];
                 _ -> Data1 = lists:reverse(tl(lists:reverse(Data))), [D|Data1]
             end,
+            xClearArea(Display,Win),
+            draw_static(Display,Win,Pen0),
             draw_dynamic(Display,Win,Pen0,Data2),
            ?MODULE:loop(Parent,Display,Win,Pen0,Data2);
     	{clear} -> 
