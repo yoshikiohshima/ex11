@@ -1,4 +1,4 @@
--module(asterix).
+-module(cartoon).
 -author(skvamme).
 -export([make/5,init/5,loop/4]).
 -define (WT,80).
@@ -30,8 +30,7 @@ loop(Parent,Display,Win,Pen0) ->
 
 
 
-%% Processing ascii file: "ASTERIX.DXF"
-%% Title: "ASTERIX.DXF"
+
 draw_static(Display,Win,Pen0) ->
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(36,15),mkPoint(37,14)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(37,14),mkPoint(40,13)])),
