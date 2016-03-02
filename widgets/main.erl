@@ -15,7 +15,8 @@ init() ->
 	Win = xCreateSimpleWindow(Display,0,0,?WT,?HT,?XC_arrow,xColor(Display,?black)),
 	xDo(Display, eMapWindow(Win)),
 	xFlush(Display),
-	Port = open_port({spawn, "../priv/atlast -i../priv/kwh.atl"}, [{line,127}]),
+	%Port = open_port({spawn, "../priv/atlast -i../priv/kwh.atl"}, [{line,127}]),
+	Port = undefined, % No port installed
 	loop(Pid,Port,Display,Win,false,undefined,undefined).
 
 loop(Pid,Port,Display,Win,Ready,Graph,Num) ->
