@@ -1,13 +1,13 @@
 -module(dialerbutton).
 -author(skvamme).
--export([make/8]).
+-export([make/6,init/6,loop/9]).
 -define (WT,120).
 -define (HT,120).
 -include("ex11_lib.hrl").
 -import(ex11_lib, [ePolyText8/5, rpc/2, sleep/1, xClearArea/1,map/2,eFillPoly/5,eCopyArea/9,
     eConfigureWindow/2,ePolyFillRectangle/3,ePolyLine/4,ePolyRectangle/3,ePolyFillArc/3,
     mkArc/6,ePolyArc/3,mkPoint/2,mkRectangle/4,xClearArea/1,xColor/2,xCreateGC/2,xCreatePixmap/4,
-    xDo/2, xFlush/1,xVar/2,ePutImage/9]).
+    xDo/2, xFlush/1,xVar/2,ePutImage/9,xCreateSimpleWindow/10,eMapWindow/1]).
 
 make(Parent,Display,PWin,X,Y,Figure) -> 
     spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y,Figure]).
@@ -63,29 +63,28 @@ init(Parent,Display,PWin,X,Y,Figure) ->
         Pen10,Pen10,Pen10,Pen10,Pen10,Pen10,Pen10,Pen10,
         Pen10,Pen10,Pen10],
      F = fun() -> null end,
-    loop(Dialer,Display, Win, Pen, ?WT, Bin, F,infinity,Figure).
+    loop(Display, Win, Pen, ?WT, Bin, F,infinity,Figure).
 
-loop(Dialer,Display, Win, Pen, Size, Bin, F, Delay, Figure) ->
+loop(Display, Win, Pen, Size, Bin, F, Delay, Figure) ->
     receive
     {event,_, buttonPress, _} ->
        F1 = fun() -> bling(Display, Win, Pen, Size, 20, Bin) end,
-        Dialer ! {figure, Figure},
-        loop(Dialer,Display, Win, Pen, Size, Bin, F1, 10, Figure);
+        loop(Display, Win, Pen, Size, Bin, F1, 10, Figure);
     {event,_, buttonRelease, _} -> io:fwrite("buttonRelease~n", []),
-        loop(Dialer,Display, Win, Pen, Size, Bin, F, Delay, Figure);
+        loop(Display, Win, Pen, Size, Bin, F, Delay, Figure);
     {event,_,expose, _} ->
         %F(),
          xDo(Display, Bin),xFlush(Display),
-        loop(Dialer,Display, Win, Pen, Size, Bin, F, Delay, Figure);
-    {infinity} -> loop(Dialer,Display, Win, Pen, Size, Bin, F, infinity, Figure);
+        loop(Display, Win, Pen, Size, Bin, F, Delay, Figure);
+    {infinity} -> loop(Display, Win, Pen, Size, Bin, F, infinity, Figure);
     {'EXIT', _Pid, _Why} ->
         true;
     _ ->
-        loop(Dialer,Display, Win, Pen, Size, Bin, F, Delay, Figure)
+        loop(Display, Win, Pen, Size, Bin, F, Delay, Figure)
     after Delay ->
         F1 = F(),
         xFlush(Display),
-        loop(Dialer,Display, Win, Pen, Size, Bin, F1, Delay, Figure)
+        loop(Display, Win, Pen, Size, Bin, F1, Delay, Figure)
    end.
 
 % Copy the face bitmap to the top rectangle, this will have the effect of erasing the previous ring
