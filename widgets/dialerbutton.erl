@@ -1,6 +1,6 @@
 -module(dialerbutton).
 -author(skvamme).
--export([make/6,init/6,loop/9]).
+-export([make/6,init/6,loop/8]).
 -define (WT,120).
 -define (HT,120).
 -include("ex11_lib.hrl").
@@ -12,7 +12,7 @@
 make(Parent,Display,PWin,X,Y,Figure) -> 
     spawn_link(?MODULE,init,[Parent,Display,PWin,X,Y,Figure]).
 
-init(Parent,Display,PWin,X,Y,Figure) ->
+init(_Parent,Display,PWin,X,Y,Figure) ->
     Win = xCreateSimpleWindow(Display,PWin,X,Y,?WT,?HT,0,?XC_cross,xColor(Display,?white),
         ?EVENT_EXPOSURE bor ?EVENT_BUTTON_PRESS bor ?EVENT_BUTTON_RELEASE), 
     xDo(Display, eMapWindow(Win)),
