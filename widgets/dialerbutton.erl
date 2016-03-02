@@ -1,8 +1,8 @@
 -module(dialerbutton).
 -author(skvamme).
 -export([make/6,init/6,loop/8]).
--define (WT,120).
--define (HT,120).
+-define (WT,150).
+-define (HT,150).
 -include("ex11_lib.hrl").
 -import(ex11_lib, [ePolyText8/5, rpc/2, sleep/1, xClearArea/1,map/2,eFillPoly/5,eCopyArea/9,
     eConfigureWindow/2,ePolyFillRectangle/3,ePolyLine/4,ePolyRectangle/3,ePolyFillArc/3,
