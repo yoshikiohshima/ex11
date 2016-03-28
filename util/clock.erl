@@ -13,6 +13,7 @@ start() -> spawn(?MODULE,init,[]).
 
 init() ->
     {ok, Display} = ex11_lib:xStart("3.1"),
+    io:format("display~p~n", [Display]),
     xSetScreenSaver(Display,0),
     Win = xCreateSimpleWindow(Display,0,0,?WT,?HT,?XC_arrow,xColor(Display,?black)),
     xDo(Display, eMapWindow(Win)),
@@ -56,6 +57,9 @@ init() ->
 loop(Display,Win,Black,Red,Hours,Minutes,Time) ->
     receive
         {'EXIT',_Pid,_Why} -> true;
+        {'event', 12582919, 'configureNotify',{X,Y}} -> 
+           io:format("~p got configureNotify: ~p, ~p~n",[?MODULE, X, Y]),
+		?MODULE:loop(Display,Win,Black,Red,Hours,Minutes,Time);
         Any -> io:format("~p got unknown msg: ~p~n",[?MODULE, Any]),
 		?MODULE:loop(Display,Win,Black,Red,Hours,Minutes,Time)
     after 1000 ->
@@ -68,7 +72,6 @@ loop(Display,Win,Black,Red,Hours,Minutes,Time) ->
 draw_dynamic(Display,Win,White,Red,Hlist,Mlist, {Hour, Minute, Second}) ->
     T = time(),
     case  T  of
-    {Hour, Minute, _} -> {Hour, Minute, Second}; % Hands should not be redrawn
     _  ->                                        % Erase hands at current position
 %	{SX,SY} = lists:nth(Second+1, Mlist),
 	{MX,MY} = lists:nth(Minute+1, Mlist),
@@ -81,16 +84,18 @@ draw_dynamic(Display,Win,White,Red,Hlist,Mlist, {Hour, Minute, Second}) ->
     end.
 
 draw_new(Display,Win,White,Red,Hlist,Mlist,{Hour, Minute, Second}) -> 
-%    {SX,SY} = lists:nth(Second+1, Mlist),
+    {SX,SY} = lists:nth(Second+1, Mlist),
     {MX,MY} = lists:nth(Minute+1, Mlist),
+    io:format("~p, ~p, ~p~n", [Second, SX, SY]),
     Hour1 = (Hour * 4) + (Minute div 15),
     {HX,HY} = lists:nth(Hour1+1, Hlist),
-%    xDo(Display,ePolyFillArc(Win, Red, [mkArc(SX-15,SY-15,30,30,0,64*360)])),
+    xDo(Display,ePolyFillArc(Win, Red, [mkArc(SX-15,SY-15,30,30,0,64*360)])),
     xDo(Display,ePolyLine(Win, Red, origin, [mkPoint(200,200),mkPoint(MX,MY)])),
     xDo(Display,ePolyLine(Win, White, origin, [mkPoint(200,200),mkPoint(HX,HY)])),
     {Hour, Minute, Second}.
 
 draw_static(Display, Win, _Pen1, Pen0) ->
+io:format("~p, ~p, ~p~n", [Display, Win, _Pen1]),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(83,70),mkPoint(66,51)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(70,83),mkPoint(51,66)])),
 xDo(Display,ePolyLine(Win, Pen0, origin, [mkPoint(50,200),mkPoint(0,200)])),
