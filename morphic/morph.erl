@@ -15,10 +15,23 @@ init(Display, Parent) ->
   X = 100,
   Y = 100,
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
-                {graphics_exposures, false},{foreground, xColor(Display, ?red)}]),
-  morph_loop(Display, Parent, Width, Height, X, Y, Color).
+                {graphics_exposures, false},{foreground, xColor(Display, ?black)}]),
+  Win = xCreateWindow(Display, Parent, X, Y, Width, Height, 0, 0, 0,
+		  [{backgroundPixel, Color},
+		   {eventMask, 
+		    ?EVENT_EXPOSURE bor 
+		    ?EVENT_STRUCTURE_NOTIFY bor 
+		    ?EVENT_BUTTON_PRESS bor 
+                    %?EVENT_BUTTON1_MOTION bor 
+		    ?EVENT_BUTTON_RELEASE},
+		   {backgroundPixmap, 0}, 
+		   {cursor, xCreateCursor(Display,?XC_arrow)},
+		   {borderPixmap,0}]),
+  xDo(Display, eMapWindow(Win)),
 
-morph_loop(Display, Parent, Width, Height, X, Y, Color) ->
+  morph_loop(Display, Win, Parent, Width, Height, X, Y, Color).
+
+morph_loop(Display, Win, Parent, Width, Height, X, Y, Color) ->
   receive
     Msg ->
       io:format("~p got msg: ~p~n",[?MODULE, Msg])
@@ -28,13 +41,13 @@ morph_loop(Display, Parent, Width, Height, X, Y, Color) ->
       NewX = X + 1;
     {'morph_draw'} -> 
       NewX = X,
-      io:format("morph_draw", []),
-      draw(Display, Parent, Width, Height, NewX, Y, Color);
+      io:format("morph_draw~n"),
+      draw(Display, Win, Width, Height, NewX, Y, Color);
     _ -> 
       NewX = X,
       true
   end,
-  morph_loop(Display, Parent, Width, Height, NewX, Y, Color).
+  morph_loop(Display, Win, Parent, Width, Height, NewX, Y, Color).
 
 draw(Display, Win, Width, Height, X, Y, Color) -> 
   Rect = mkRectangle(X, Y, Width, Height),
