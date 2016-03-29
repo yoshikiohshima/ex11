@@ -25,8 +25,8 @@ init() ->
 
 loop(Display, Win, Scene, Pix) ->
   receive
-    {event, _, buttonPress, _} ->
-      lists:nth(1, Scene) ! {'buttonPress'}
+    {event, _, buttonPress, E} ->
+      lists:nth(1, Scene) ! {'buttonPress', E}
   after 1000 -> 
     io:format("after ~p~n", [Scene]),
     draw(Display, Win, Scene, Pix)

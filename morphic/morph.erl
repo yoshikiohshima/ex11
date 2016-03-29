@@ -6,35 +6,40 @@
     eMapWindow/1,xCreateWindow/10,xCreateCursor/2,ePolyFillRectangle/3,xCreatePixmap/4,eCopyArea/9,ePolyArc/3,ePolyFillArc/3,
     mkArc/6,mkPoint/2,ePolyLine/4,xPen/3,xSetScreenSaver/2]).
 
+-define(containsPoint(X, Y, W, H, MX, MY),
+        (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H))).
+
 newMorph(Display, Pix, X, Y) ->
  init(Display, Pix, X, Y).
 
 init(Display, Pix, X, Y) ->
-  Width = 50,
-  Height = 40,
+  W = 50,
+  H = 40,
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
                 {graphics_exposures, false},{foreground, xColor(Display, ?red)}]),
-  morph_loop(Display, Pix, Width, Height, X, Y, Color).
+  morph_loop(Display, Pix, W, H, X, Y, Color).
 
-morph_loop(Display, Pix, Width, Height, X, Y, Color) ->
+morph_loop(Display, Pix, W, H, X, Y, Color) ->
   receive
     Msg ->
       io:format("~p got msg: ~p~n",[?MODULE, Msg])
   end,
   case Msg of 
-    {buttonPress} -> 
-      io:format("morph buttonPress~n"),
+    {buttonPress, {B, BX, BY, SX, SY}} when ?containsPoint(X, Y, W, H, BX, BY) -> 
       NewX = X + 5;
     {morph_draw} ->
       NewX = X,
       io:format("morph_draw~n"),
-      draw(Display, Pix, Width, Height, NewX, Y, Color);
+      draw(Display, Pix, W, H, NewX, Y, Color);
     _ -> 
       NewX = X,
       true
   end,
-  morph_loop(Display, Pix, Width, Height, NewX, Y, Color).
+  morph_loop(Display, Pix, W, H, NewX, Y, Color).
 
-draw(Display, Pix, Width, Height, X, Y, Color) -> 
-  Rect = mkRectangle(X, Y, Width, Height),
+containsPoint(X, Y, W, H, MX, MY) -> 
+  (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H)).
+
+draw(Display, Pix, W, H, X, Y, Color) -> 
+  Rect = mkRectangle(X, Y, W, H),
   xDo(Display, ePolyFillRectangle(Pix, Color, [Rect])).
