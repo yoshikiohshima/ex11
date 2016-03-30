@@ -23,40 +23,51 @@ init(Display, Pix, X, Y) ->
   H = 40,
   B = #{},
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
-                {graphics_exposures, false},{foreground, xColor(Display, ?red)}]),
+                {graphics_exposures, false},{foreground, xColor(Display, ?blue)}]),
   morph_loop(Display, Pix, W, H, X, Y, B, Color, {0, 0, 0}).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
 
 morph_loop(Display, Pix, W, H, X, Y, B, Color, E) ->
-  io:format("E: ~p~n", [E]),
   {Down, Up, Move} = E,
   receive
-    Msg ->
-      io:format("~p got msg: ~p~n",[?MODULE, Msg])
-  end,
-  case Msg of
     {beDraggable} ->
-      NewE = {{dragDown, {}}, {dragUp, {}}, {dragMove, {}}};
+      NewX = X,
+      NewY = Y,
+      NewE = {{drag, {}}, {drag, {}}, {drag, {}}};
     {buttonPress, {P, BX, BY, SX, SY}}
          when ?containsPoint(X, Y, W, H, BX, BY),
               Down /= 0 -> 
       {F, Param} = Down,
-      NewDown = down(F, {P, BX, BY, SX, SY}, X, Y),
-      NewE = {NewDown, Up, Move};
+      NewDown = down(F, E, {P, BX, BY, SX, SY}, X, Y),
+      NewE = {NewDown, Up, Move},
+      NewX = X,
+      NewY = Y;
+    {buttonMove, {P, BX, BY, SX, SY}}
+         when ?containsPoint(X, Y, W, H, BX, BY),
+              Move /= 0 -> 
+      {F, Param} = Move,
+      NewMove = move(F, E, {P, BX, BY, SX, SY}, X, Y),
+      {_, {NewX, NewY}} = NewMove,
+      NewE = {Down, Up, NewMove};
     {morph_draw} ->
       NewE = E,
+      NewX = X,
+      NewY = Y,
       draw(Display, Pix, W, H, X, Y, Color);
     _ -> 
-      NewE = E
+      NewE = E,
+      NewX = X,
+      NewY = Y
   end,
-  morph_loop(Display, Pix, W, H, X, Y, B, Color, NewE).
+  morph_loop(Display, Pix, W, H, NewX, NewY, B, Color, NewE).
 
-down(dragDown, EV, X, Y) ->
+down(drag, E, EV, X, Y) ->
   {P, BX, BY, SX, SY} = EV,
-  {dragDown, {X, Y, BX, BY}}.
+  {drag, {BX - X, BY - Y}}.
 
-
-containsPoint(X, Y, W, H, MX, MY) -> 
-  (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H)).
+move(drag, E, EV, X, Y) ->
+  {P, BX, BY, SX, SY} = EV,
+  {{_, {OrigXDiff, OrigYDiff}}, _, _} = E,
+  {drag, {BX - OrigXDiff, BY - OrigYDiff}}.
 
 draw(Display, Pix, W, H, X, Y, Color) -> 
   Rect = mkRectangle(X, Y, W, H),

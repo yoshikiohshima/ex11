@@ -14,7 +14,7 @@ start() -> spawn(?MODULE,init,[]).
 init() -> 
   {ok, Display} = ex11_lib:xStart("3.1"),
   xSetScreenSaver(Display,0),
-  Win = xCreateSimpleWindow(Display,400,0,400,400,?XC_arrow,xColor(Display,?black)),
+  Win = xCreateSimpleWindow(Display,400,0,400,400,?XC_arrow,xColor(Display,?gray)),
   Pix = xCreatePixmap(Display, Win, 400, 400),
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
@@ -27,19 +27,22 @@ init() ->
 loop(Display, Win, Scene, Pix) ->
   receive
     {event, _, buttonPress, E} ->
-      lists:nth(1, Scene) ! {'buttonPress', E}
-  after 1000 -> 
-    io:format("after ~p~n", [Scene]),
+      lists:nth(1, Scene) ! {'buttonPress', E};
+    {event, _, motionNotify, E} ->
+      lists:nth(1, Scene) ! {'buttonMove', E};
+    X ->
+      io:format("X: ~p~n", [X])
+  after 20 -> 
     draw(Display, Win, Scene, Pix)
   end,
   loop(Display, Win, Scene, Pix).
 
 draw(Display, Win, Scene, Pix) ->
-    Black = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
- 	 {graphics_exposures, true},{foreground, xColor(Display, ?black)}]),
+    Back = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
+ 	 {graphics_exposures, true},{foreground, xColor(Display, ?gray)}]),
 
   Rect = mkRectangle(0, 0, 400, 400),
-  xDo(Display, ePolyFillRectangle(Pix, Black, [Rect])),
+  xDo(Display, ePolyFillRectangle(Pix, Back, [Rect])),
 %  xFlush(Display),
   lists:map(fun(M) -> 
     M ! {'morph_draw'} end,
