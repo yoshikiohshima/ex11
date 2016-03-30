@@ -30,9 +30,11 @@ loop(Display, Win, Scene, Pix) ->
       lists:nth(1, Scene) ! {'buttonPress', E};
     {event, _, motionNotify, E} ->
       lists:nth(1, Scene) ! {'buttonMove', E};
+    {event, _, motionRelease, E} ->
+      lists:nth(1, Scene) ! {'buttonUp', E};
     X ->
       io:format("X: ~p~n", [X])
-  after 20 -> 
+  after 20 ->
     draw(Display, Win, Scene, Pix)
   end,
   loop(Display, Win, Scene, Pix).

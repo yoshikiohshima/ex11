@@ -21,12 +21,11 @@ newMorph(Display, Pix, X, Y) ->
 init(Display, Pix, X, Y) ->
   W = 50,
   H = 40,
-  B = #{},
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
                 {graphics_exposures, false},{foreground, xColor(Display, ?blue)}]),
-  morph_loop(Display, Pix, W, H, X, Y, B, Color, {0, 0, 0}).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
+  morph_loop(Display, Pix, W, H, X, Y, Color, {0, 0, 0}).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
 
-morph_loop(Display, Pix, W, H, X, Y, B, Color, E) ->
+morph_loop(Display, Pix, W, H, X, Y, Color, E) ->
   {Down, Up, Move} = E,
   receive
     {beDraggable} ->
@@ -48,6 +47,14 @@ morph_loop(Display, Pix, W, H, X, Y, B, Color, E) ->
       NewMove = move(F, E, {P, BX, BY, SX, SY}, X, Y),
       {_, {NewX, NewY}} = NewMove,
       NewE = {Down, Up, NewMove};
+    {buttonUp, {P, BX, BY, SX, SY}}
+         when ?containsPoint(X, Y, W, H, BX, BY),
+              Up /= 0 -> 
+      {F, Param} = Up,
+      NewUp = up(F, E, {P, BX, BY, SX, SY}, X, Y),
+      NewX = X,
+      NewY = Y,
+      NewE = {Down, NewUp, Move};
     {morph_draw} ->
       NewE = E,
       NewX = X,
@@ -58,7 +65,7 @@ morph_loop(Display, Pix, W, H, X, Y, B, Color, E) ->
       NewX = X,
       NewY = Y
   end,
-  morph_loop(Display, Pix, W, H, NewX, NewY, B, Color, NewE).
+  morph_loop(Display, Pix, W, H, NewX, NewY, Color, NewE).
 
 down(drag, E, EV, X, Y) ->
   {P, BX, BY, SX, SY} = EV,
@@ -68,6 +75,11 @@ move(drag, E, EV, X, Y) ->
   {P, BX, BY, SX, SY} = EV,
   {{_, {OrigXDiff, OrigYDiff}}, _, _} = E,
   {drag, {BX - OrigXDiff, BY - OrigYDiff}}.
+
+up(drag, E, EV, X, Y) ->
+  {P, BX, BY, SX, SY} = EV,
+  {{_, {OrigXDiff, OrigYDiff}}, _, _} = E,
+  {drag, 0, 0}.
 
 draw(Display, Pix, W, H, X, Y, Color) -> 
   Rect = mkRectangle(X, Y, W, H),
