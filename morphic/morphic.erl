@@ -21,6 +21,7 @@ init() ->
   M = spawn(morph, newMorph, [Display, Pix, 300, 300]),
   N = spawn(morph, newMorph, [Display, Pix, 250, 250]),
   Scene = [M, N],
+  M ! {'beDraggable'},
   loop(Display, Win, Scene, Pix).
 
 loop(Display, Win, Scene, Pix) ->
@@ -39,7 +40,7 @@ draw(Display, Win, Scene, Pix) ->
 
   Rect = mkRectangle(0, 0, 400, 400),
   xDo(Display, ePolyFillRectangle(Pix, Black, [Rect])),
-  xFlush(Display),
+%  xFlush(Display),
   lists:map(fun(M) -> 
     M ! {'morph_draw'} end,
     Scene),
@@ -48,6 +49,5 @@ draw(Display, Win, Scene, Pix) ->
  	 {graphics_exposures, true}, {foreground, xColor(Display, ?white)}]),
 
   xDo(Display, eCopyArea(Pix, Win, Copy, 0, 0, 0, 0, 400, 400)),
-%  ePutImage(Win, Copy, 400, 400, 0, 0, 0, 32, Pix),
   xFlush(Display).
 
