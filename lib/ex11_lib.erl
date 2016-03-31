@@ -221,7 +221,7 @@ xCreateSimpleWindow(Display, X, Y, Width, Ht, Cursor, Bg) ->
 		    ?EVENT_EXPOSURE bor 
 		    ?EVENT_STRUCTURE_NOTIFY bor 
 		    ?EVENT_BUTTON_PRESS bor 
-                    %?EVENT_BUTTON1_MOTION bor 
+                    ?EVENT_BUTTON1_MOTION bor 
 		    ?EVENT_BUTTON_RELEASE},
 		   {backgroundPixmap, 0}, 
 		   {cursor, xCreateCursor(Display,Cursor)},
