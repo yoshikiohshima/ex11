@@ -8,7 +8,7 @@
         (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H))).
 
 -record(morphData, {x = 0, y = 0, width = 50, height = 40, color}).
--record(handlerData, {down = 0, up = 0, move = 0}).
+-record(handler, {down = 0, up = 0, move = 0}).
 
 newMorph(Display, Pix, X, Y) ->
  init(Display, Pix, X, Y).
@@ -17,56 +17,57 @@ init(Display, Pix, X, Y) ->
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
                 {graphics_exposures, false},{foreground, xColor(Display, 16#1010E0)}]),
   Data = #morphData{x=X, y=Y, color = Color},
-  morph_loop(Display, Pix, Data, {0, 0, 0}).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
+  Handler = #handler{},
+  morph_loop(Display, Pix, Data, Handler).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
 
-morph_loop(Display, Pix, Data, E) ->
-  {Down, Up, Move} = E,
+morph_loop(Display, Pix, Data, Handler) ->
+  io:format("Handler: ~p~n", [Handler#handler.down]),
   receive
-    {beDraggable} ->
-      NewE = {{drag, {}}, {drag, {}}, {drag, {}}};
     {'data', NewData} ->
-       NewE = E,
-       morph_loop(Display, Pix, NewData, E);
+       morph_loop(Display, Pix, NewData, Handler);
+    {'handlers', NewHandler} ->
+      morph_loop(Display, Pix, Data, NewHandler);
+    {beDraggable} ->
+      self() ! {'handlers', Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}}},
+      morph_loop(Display, Pix, Data, Handler);
     {buttonPress, {P, BX, BY, _, _}}
          when ?containsPoint(Data#morphData.x, Data#morphData.y, Data#morphData.width, Data#morphData.height, BX, BY),
-              Down /= 0 -> 
-      {F, Param} = Down,
-      NewDown = down(F, E, {P, BX, BY}, Data),
-      NewE = {NewDown, Up, Move};
+               Handler#handler.down /= 0 -> 
+      {F, _} = Handler#handler.down,
+      down(F, Handler, {P, BX, BY}, Data),
+      morph_loop(Display, Pix, Data, Handler);
     {buttonMove, {P, BX, BY, _, _}}
          when ?containsPoint(Data#morphData.x, Data#morphData.y, Data#morphData.width, Data#morphData.height, BX, BY),
-              Move /= 0 -> 
-      {F, Param} = Move,
-      NewMove = move(F, E, {P, BX, BY}, Data),
-      NewE = {Down, Up, NewMove};
+              Handler#handler.move /= 0 -> 
+      {F, _} = Handler#handler.move,
+      move(F, Handler, {P, BX, BY}, Data),
+      morph_loop(Display, Pix, Data, Handler);
     {buttonUp, {P, BX, BY, _, _}}
          when ?containsPoint(Data#morphData.x, Data#morphData.y, Data#morphData.width, Data#morphData.height, BX, BY),
-              Up /= 0 -> 
-      {F, Param} = Up,
-      NewUp = up(F, E, {P, BX, BY}, Data),
-      NewE = {Down, NewUp, Move};
+              Handler#handler.up /= 0 -> 
+      {F, _} = Handler#handler.up,
+      up(F, Handler, {P, BX, BY}, Data),
+      morph_loop(Display, Pix, Data, Handler);
     {morph_draw} ->
-      NewE = E,
-      draw(Display, Pix, Data);
-    _ -> 
-      NewE = E
-  end,
-  morph_loop(Display, Pix, Data, NewE).
+      draw(Display, Pix, Data),
+      morph_loop(Display, Pix, Data, Handler);
+    _ -> morph_loop(Display, Pix, Data, Handler)
+  end.
+  
 
-down(drag, E, EV, Data) ->
+down(drag, Handler, EV, Data) ->
   {P, BX, BY} = EV,
-  {drag, {BX - Data#morphData.x, BY - Data#morphData.y}}.
+  NewHandler = Handler#handler{down = {drag, {BX - Data#morphData.x, BY - Data#morphData.y}}},
+  self() ! {'handlers', NewHandler}.
 
-move(drag, E, EV, Data) ->
+move(drag, Handler, EV, Data) ->
   {P, BX, BY} = EV,
-  {{_, {OrigXDiff, OrigYDiff}}, _, _} = E,
-  self() ! {'data', Data#morphData{x = BX - OrigXDiff, y = BY - OrigYDiff}},
-  {drag, {}}.
+  OrigT = Handler#handler.down,
+  {_, {OrigXDiff, OrigYDiff}} = OrigT,
+  self() ! {'data', Data#morphData{x = BX - OrigXDiff, y = BY - OrigYDiff}}.
 
 up(drag, E, EV, Data) ->
-%  {P, BX, BY} = EV,
-  {{_, {OrigXDiff, OrigYDiff}}, _, _} = E,
-  {drag, {}}.
+  true.
 
 draw(Display, Pix, Data) -> 
   Rect = mkRectangle(Data#morphData.x, Data#morphData.y, Data#morphData.width, Data#morphData.height),

@@ -19,8 +19,8 @@ init() ->
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
   M = spawn(morph, newMorph, [Display, Pix, 300, 300]),
-  N = spawn(morph, newMorph, [Display, Pix, 250, 250]),
-  Scene = [M, N],
+%  N = spawn(morph, newMorph, [Display, Pix, 250, 250]),
+  Scene = [M],
   M ! {'beDraggable'},
   loop(Display, Win, Scene, Pix).
 
