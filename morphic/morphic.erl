@@ -24,39 +24,52 @@ init() ->
   xFlush(Display),
   M = spawn(morph, newMorph, [self(), Display, Pix, 300, 300]),
   N = spawn(morph, newMorph, [self(), Display, Pix, 250, 250]),
+  Nil = spawn(morph, newMorph, [self(), Display, Pix, 0, 0]),
   Scene = [M, N],
   Props = #{}, % {Pid => data}; created at every frame
   M ! {'beDraggable'},
-  loop(Display, Win, Pix, Scene, Props).
+  N ! {'beDraggable'},
+  loop(Display, Win, Pix, Scene, Props, Nil, Nil).
 
-loop(Display, Win, Pix, Scene, Props) ->
+loop(Display, Win, Pix, Scene, Props, Focus, Nil) ->
   io:format("Props: ~p~n", [Props]),
   receive
     {'newMorph', Pid} ->
-      loop(Display, Win, Pix, [Pid | Scene], Props);
+      loop(Display, Win, Pix, [Pid | Scene], Props, Focus, Nil);
+    {'focus', Pid} ->
+      loop(Display, Win, Pix, Scene, Props, Pid, Nil);
+    {'unfocus'} ->
+      loop(Display, Win, Pix, Scene, Props, Nil, Nil);
     {event, _, buttonPress, E} ->
-      lists:nth(1, Scene) ! {'buttonPress', E},
-      loop(Display, Win, Pix, Scene, Props);
+      {_, BX, BY, _, _} = E,
+      target(Scene, BX, BY, Props, Nil) ! {'buttonPress', E},
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
     {event, _, motionNotify, E} ->
-      lists:nth(1, Scene) ! {'buttonMove', E},
-      loop(Display, Win, Pix, Scene, Props);
-    {event, _, motionRelease, E} ->
-      lists:nth(1, Scene) ! {'buttonUp', E},
-      loop(Display, Win, Pix, Scene, Props);
+      {_, BX, BY, _, _} = E,
+      case Focus /= Nil of
+        true -> T = Focus;
+        _    -> T = target(Scene, BX, BY, Props, Nil)
+      end,
+      T ! {'buttonMove', E},
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
+    {event, _, buttonRelease, E} ->
+      {_, BX, BY, _, _} = E,
+      target(Scene, BX, BY, Props, Nil) ! {'buttonRelease', E},
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
     {copyPix} ->
       copyPix(Display, Win, Pix),
-      loop(Display, Win, Pix, Scene, Props);
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
     {'tell', {Pid, Data}} ->
-      loop(Display, Win, Pix, Scene, Props#{Pid=>Data});
+      loop(Display, Win, Pix, Scene, Props#{Pid=>Data}, Focus, Nil);
     X ->
       io:format("X: ~p~n", [X]),
-      loop(Display, Win, Pix, Scene, Props)
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil)
   after 20 ->
-    draw(Display, Win, Scene, Pix),
-    loop(Display, Win, Pix, Scene, #{})
+    draw(Display, Scene, Pix),
+    loop(Display, Win, Pix, Scene, Props, Focus, Nil)
   end.
 
-draw(Display, Win, Scene, Pix) ->
+draw(Display, Scene, Pix) ->
   Back = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
  	 {graphics_exposures, true},{foreground, xColor(Display, ?gray)}]),
 
@@ -75,12 +88,11 @@ copyPix(Display, Win, Pix) ->
   xDo(Display, eCopyArea(Pix, Win, Copy, 0, 0, 0, 0, 400, 400)),
   xFlush(Display).
 
-target([], X, Y, Props) -> false;
-target([M|MS], X, Y, Props) ->
+target([], _, _, _, Nil) -> Nil;
+target([M|MS], X, Y, Props, Nil) ->
   Prop = (catch maps:get(M, Props)),
   Val = is_record(Prop, data) andalso ?containsPoint(Prop#data.x, Prop#data.y, Prop#data.width, Prop#data.height, X, Y),
-  io:format("Val: ~p~n", [Val]),
   case Val of
     true -> M;
-    _ -> target(MS, X, Y, Props)
+    _ -> target(MS, X, Y, Props, Nil)
   end.

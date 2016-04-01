@@ -28,22 +28,19 @@ loop(Morphic, Display, Pix, Data, Handler) ->
       self() ! {'handlers', Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}}},
       loop(Morphic, Display, Pix, Data, Handler);
     {buttonPress, {P, BX, BY, _, _}}
-         when ?containsPoint(Data#data.x, Data#data.y, Data#data.width, Data#data.height, BX, BY),
-               Handler#handler.down /= 0 -> 
+         when Handler#handler.down /= 0 -> 
       {F, _} = Handler#handler.down,
-      down(F, Handler, {P, BX, BY}, Data),
+      down(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
     {buttonMove, {P, BX, BY, _, _}}
-         when ?containsPoint(Data#data.x, Data#data.y, Data#data.width, Data#data.height, BX, BY),
-              Handler#handler.move /= 0 -> 
+         when Handler#handler.move /= 0 -> 
       {F, _} = Handler#handler.move,
-      move(F, Handler, {P, BX, BY}, Data),
+      move(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
-    {buttonUp, {P, BX, BY, _, _}}
-         when ?containsPoint(Data#data.x, Data#data.y, Data#data.width, Data#data.height, BX, BY),
-              Handler#handler.up /= 0 -> 
+    {buttonRelease, {P, BX, BY, _, _}}
+         when Handler#handler.up /= 0 -> 
       {F, _} = Handler#handler.up,
-      up(F, Handler, {P, BX, BY}, Data),
+      up(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
     {draw} ->
       Morphic ! {'tell', {self(), Data}},
@@ -52,19 +49,26 @@ loop(Morphic, Display, Pix, Data, Handler) ->
     _ -> loop(Morphic, Display, Pix, Data, Handler)
   end.
 
-down(drag, Handler, EV, Data) ->
+
+down(none, _, _, _, _) -> true;
+down(drag, Handler, EV, Data, Morphic) ->
   {_, BX, BY} = EV,
   NewHandler = Handler#handler{down = {drag, {BX - Data#data.x, BY - Data#data.y}}},
+  Morphic ! {'focus', self()},
   self() ! {'handlers', NewHandler}.
 
-move(drag, Handler, EV, Data) ->
+move(none, _, _, _, _) -> true;
+move(drag, Handler, EV, Data, Morphic) ->
   {_, BX, BY} = EV,
   OrigT = Handler#handler.down,
   {_, {OrigXDiff, OrigYDiff}} = OrigT,
   self() ! {'data', Data#data{x = BX - OrigXDiff, y = BY - OrigYDiff}}.
 
-up(drag, Handler, EV, Data) ->
-  true.
+up(none, _, _, _, _) -> true;
+up(drag, Handler, EV, Data, Morphic) ->
+  Morphic ! {'unfocus'}.
+
+
 
 draw(Morphic, Display, Pix, Data) -> 
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
