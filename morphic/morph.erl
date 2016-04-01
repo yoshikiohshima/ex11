@@ -8,7 +8,7 @@
         (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H))).
 
 -record(data, {x = 0, y = 0, width = 50, height = 40, color}).
--record(handler, {down = 0, up = 0, move = 0}).
+-record(handler, {down = {none, {}}, up = {none, {}}, move = {none, {}}}).
 
 newMorph(Morphic, Display, Pix, X, Y) -> init(Morphic, Display, Pix, X, Y).
 
@@ -27,18 +27,15 @@ loop(Morphic, Display, Pix, Data, Handler) ->
     {beDraggable} ->
       self() ! {'handlers', Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}}},
       loop(Morphic, Display, Pix, Data, Handler);
-    {buttonPress, {P, BX, BY, _, _}}
-         when Handler#handler.down /= 0 -> 
+    {buttonPress, {P, BX, BY, _, _}} -> 
       {F, _} = Handler#handler.down,
       down(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
-    {buttonMove, {P, BX, BY, _, _}}
-         when Handler#handler.move /= 0 -> 
+    {buttonMove, {P, BX, BY, _, _}} ->
       {F, _} = Handler#handler.move,
       move(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
-    {buttonRelease, {P, BX, BY, _, _}}
-         when Handler#handler.up /= 0 -> 
+    {buttonRelease, {P, BX, BY, _, _}} ->
       {F, _} = Handler#handler.up,
       up(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
@@ -48,7 +45,6 @@ loop(Morphic, Display, Pix, Data, Handler) ->
       loop(Morphic, Display, Pix, Data, Handler);
     _ -> loop(Morphic, Display, Pix, Data, Handler)
   end.
-
 
 down(none, _, _, _, _) -> true;
 down(drag, Handler, EV, Data, Morphic) ->
@@ -67,8 +63,6 @@ move(drag, Handler, EV, Data, Morphic) ->
 up(none, _, _, _, _) -> true;
 up(drag, Handler, EV, Data, Morphic) ->
   Morphic ! {'unfocus'}.
-
-
 
 draw(Morphic, Display, Pix, Data) -> 
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
