@@ -23,53 +23,69 @@ init() ->
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
   M = spawn(morph, newMorph, [self(), Display, Pix, 300, 300]),
-  N = spawn(morph, newMorph, [self(), Display, Pix, 250, 250]),
+%  N = spawn(morph, newMorph, [self(), Display, Pix, 250, 250]),
   Nil = spawn(morph, newMorph, [self(), Display, Pix, 0, 0]),
-  Scene = [M, N],
+  Scene = [M],
   Props = #{}, % {Pid => data}; created at every frame
   M ! {'beDraggable'},
-  N ! {'beDraggable'},
-  loop(Display, Win, Pix, Scene, Props, Nil, Nil).
+  %N ! {'beDraggable'},
+  StartTime = erlang:system_time(),
+  loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, StartTime, 0).
 
-loop(Display, Win, Pix, Scene, Props, Focus, Nil) ->
-  io:format("Props: ~p~n", [Props]),
+loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts) ->
   receive
     {'newMorph', Pid} ->
-      loop(Display, Win, Pix, [Pid | Scene], Props, Focus, Nil);
+      loop(Display, Win, Pix, [Pid | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {'focus', Pid} ->
-      loop(Display, Win, Pix, Scene, Props, Pid, Nil);
+      loop(Display, Win, Pix, Scene, Props, Pid, Nil, StartTime, LastRequestTime, Ts);
     {'unfocus'} ->
-      loop(Display, Win, Pix, Scene, Props, Nil, Nil);
+      loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, LastRequestTime, Ts);
     {event, _, buttonPress, E} ->
       {_, BX, BY, _, _} = E,
       target(Scene, BX, BY, Props, Nil) ! {'buttonPress', E},
-      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {event, _, motionNotify, E} ->
       {_, BX, BY, _, _} = E,
       case Focus /= Nil of
-        true -> T = Focus;
-        _    -> T = target(Scene, BX, BY, Props, Nil)
+        true -> Target = Focus;
+        _    -> Target = target(Scene, BX, BY, Props, Nil)
       end,
-      T ! {'buttonMove', E},
-      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
+      Target ! {'buttonMove', E},
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {event, _, buttonRelease, E} ->
       {_, BX, BY, _, _} = E,
       target(Scene, BX, BY, Props, Nil) ! {'buttonRelease', E},
-      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {copyPix} ->
       copyPix(Display, Win, Pix),
-      loop(Display, Win, Pix, Scene, Props, Focus, Nil);
-    {'tell', {Pid, Data}} ->
-      loop(Display, Win, Pix, Scene, Props#{Pid=>Data}, Focus, Nil);
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, Ts);
+    {'tell', {Pid, T, Data}} ->
+      NewTs = Ts - 1,
+      case NewTs of
+        0 -> copyPix(Display, Win, Pix),
+             io:format("told to zero: ~p, ~p~n", [T, NewTs]),
+             loop(Display, Win, Pix, Scene, #{}, Focus, Nil, StartTime, 0, NewTs);
+        _ -> 
+             loop(Display, Win, Pix, Scene, Props#{Pid=>Data}, Focus, Nil, StartTime, LastRequestTime, NewTs)
+        end;
     X ->
       io:format("X: ~p~n", [X]),
-      loop(Display, Win, Pix, Scene, Props, Focus, Nil)
-  after 20 ->
-    draw(Display, Scene, Pix),
-    loop(Display, Win, Pix, Scene, Props, Focus, Nil)
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts)
+  after 5000 ->
+    case LastRequestTime of
+      0 ->
+       T = erlang:system_time() - StartTime,
+       NewTs = length(Scene),
+       io:format("after zero: ~p, ~p~n", [T, NewTs]),
+       draw(Display, Scene, Pix, T),
+       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, T, NewTs);
+      _ ->
+       copyPix(Display, Win, Pix),
+       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, 0)
+     end
   end.
 
-draw(Display, Scene, Pix) ->
+draw(Display, Scene, Pix, T) ->
   Back = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
  	 {graphics_exposures, true},{foreground, xColor(Display, ?gray)}]),
 
@@ -77,8 +93,9 @@ draw(Display, Scene, Pix) ->
   xDo(Display, ePolyFillRectangle(Pix, Back, [Rect])),
 %  xFlush(Display),
   lists:foreach(fun(M) -> 
-    M ! {'draw'} end,
+    M ! {'draw', T} end,
     Scene),
+  % some time passed from last drawing, and also enough number of morphs sent in their ack
   self() ! {'copyPix'}.
 
 copyPix(Display, Win, Pix) ->
