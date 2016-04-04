@@ -19,7 +19,6 @@ init(Morphic, Display, Pix, X, Y) ->
   loop(Morphic, Display, Pix, Data, Handler).   % {down, up, move}.  Values are either zero or a record of {fun, params}.
 
 loop(Morphic, Display, Pix, Data, Handler) ->
-  io:format("handlers at top: ~p~n", [Handler]),
   receive
     {'data', NewData} ->
        loop(Morphic, Display, Pix, NewData, Handler);
@@ -29,8 +28,8 @@ loop(Morphic, Display, Pix, Data, Handler) ->
     {beDraggable} ->
       loop(Morphic, Display, Pix, Data, Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}});
     {buttonPress, {P, BX, BY, _, _}} -> 
-      {F, _} = Handler#handler.down,
       io:format("press: ~p~n", [Handler]),
+      {F, _} = Handler#handler.down,
       down(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Display, Pix, Data, Handler);
     {buttonMove, {P, BX, BY, _, _}} ->

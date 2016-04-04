@@ -8,6 +8,7 @@
     mkArc/6,mkPoint/2,ePolyLine/4,xPen/3,xSetScreenSaver/2]).
 
 -import(morph, [newMorph/5]).
+-import(display, [newDisplay/1]).
 -record(data, {x, y, width, height, color}).
 
 -define(containsPoint(X, Y, W, H, MX, MY),
@@ -23,12 +24,15 @@ init() ->
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
   M = spawn(morph, newMorph, [self(), Display, Pix, 300, 300]),
-%  N = spawn(morph, newMorph, [self(), Display, Pix, 250, 250]),
+  N = spawn(morph, newMorph, [self(), Display, Pix, 250, 250]),
   Nil = spawn(morph, newMorph, [self(), Display, Pix, 0, 0]),
-  Scene = [M],
+  Scene = [M, N],
   Props = #{}, % {Pid => data}; created at every frame
   M ! {'beDraggable'},
-  %N ! {'beDraggable'},
+  N ! {'beDraggable'},
+
+  Timer = spawn(display, newDisplay, [self()]),
+
   StartTime = erlang:system_time(),
   loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, StartTime, 0).
 
@@ -42,6 +46,8 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, LastRequestTime, Ts);
     {event, _, buttonPress, E} ->
       {_, BX, BY, _, _} = E,
+      Target = target(Scene, BX, BY, Props, Nil),
+      io:format("target: ~p~n", [Target]),
       target(Scene, BX, BY, Props, Nil) ! {'buttonPress', E},
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {event, _, motionNotify, E} ->
@@ -63,26 +69,24 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       NewTs = Ts - 1,
       case NewTs of
         0 -> copyPix(Display, Win, Pix),
-             io:format("told to zero: ~p, ~p~n", [T, NewTs]),
-             loop(Display, Win, Pix, Scene, #{}, Focus, Nil, StartTime, 0, NewTs);
+             loop(Display, Win, Pix, Scene, Props#{Pid=>Data}, Focus, Nil, StartTime, 0, NewTs);
         _ -> 
              loop(Display, Win, Pix, Scene, Props#{Pid=>Data}, Focus, Nil, StartTime, LastRequestTime, NewTs)
         end;
+    {'display'} ->
+      case LastRequestTime of
+        0 ->
+         T = erlang:system_time() - StartTime,
+         NewTs = length(Scene),
+         draw(Display, Scene, Pix, T),
+         loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, T, NewTs);
+        _ ->
+         copyPix(Display, Win, Pix),
+         loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, 0)
+       end;
     X ->
       io:format("X: ~p~n", [X]),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts)
-  after 5000 ->
-    case LastRequestTime of
-      0 ->
-       T = erlang:system_time() - StartTime,
-       NewTs = length(Scene),
-       io:format("after zero: ~p, ~p~n", [T, NewTs]),
-       draw(Display, Scene, Pix, T),
-       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, T, NewTs);
-      _ ->
-       copyPix(Display, Win, Pix),
-       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, 0)
-     end
   end.
 
 draw(Display, Scene, Pix, T) ->
