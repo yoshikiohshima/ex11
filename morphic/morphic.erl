@@ -46,8 +46,6 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, LastRequestTime, Ts);
     {event, _, buttonPress, E} ->
       {_, BX, BY, _, _} = E,
-      Target = target(Scene, BX, BY, Props, Nil),
-      io:format("target: ~p~n", [Target]),
       target(Scene, BX, BY, Props, Nil) ! {'buttonPress', E},
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {event, _, motionNotify, E} ->
