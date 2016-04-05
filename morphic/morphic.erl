@@ -8,7 +8,7 @@
     mkArc/6,mkPoint/2,ePolyLine/4,xPen/3,xSetScreenSaver/2]).
 
 -import(morph, [newMorph/5]).
--import(display, [newDisplay/1]).
+-import(timer, [newTimer/1]).
 -record(data, {x, y, width, height, color}).
 
 -define(containsPoint(X, Y, W, H, MX, MY),
@@ -31,7 +31,7 @@ init() ->
   M ! {'beDraggable'},
   N ! {'beDraggable'},
 
-  Timer = spawn(display, newDisplay, [self()]),
+  Timer = spawn(timer, newTimer, [self()]),
 
   StartTime = erlang:system_time(),
   loop(Display, Win, Pix, Scene, Props, Nil, Nil, StartTime, StartTime, 0).

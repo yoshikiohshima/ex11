@@ -23,7 +23,6 @@ loop(Morphic, Display, Pix, Data, Handler) ->
     {'data', NewData} ->
        loop(Morphic, Display, Pix, NewData, Handler);
     {'handlers', NewHandler} ->
-      io:format("new handlers: ~p~n", [NewHandler]),
       loop(Morphic, Display, Pix, Data, NewHandler);
     {beDraggable} ->
       loop(Morphic, Display, Pix, Data, Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}});

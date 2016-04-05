@@ -1,8 +1,8 @@
--module(display).
+-module(timer).
 -author(ohshima).
--export([newDisplay/1]).
+-export([newTimer/1]).
 
-newDisplay(Morphic) -> 
+newTimer(Morphic) -> 
   loop(Morphic).
 
 loop(Morphic) ->
