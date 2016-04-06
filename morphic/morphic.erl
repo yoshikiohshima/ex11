@@ -28,8 +28,8 @@ init() ->
   Nil = spawn(morph, newMorph, [self(), Display, Pix, 0, 0]),
   Scene = [M, N],
   Props = #{}, % {Pid => data}; created at every frame
-  M ! {'beDraggable'},
-  N ! {'beDraggable'},
+  M ! beDraggable,
+  N ! beDraggable,
 
   Timer = spawn(timer, newTimer, [self()]),
 

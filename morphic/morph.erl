@@ -24,7 +24,7 @@ loop(Morphic, Display, Pix, Data, Handler) ->
        loop(Morphic, Display, Pix, NewData, Handler);
     {'handlers', NewHandler} ->
       loop(Morphic, Display, Pix, Data, NewHandler);
-    {beDraggable} ->
+    beDraggable ->
       loop(Morphic, Display, Pix, Data, Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}});
     {buttonPress, {P, BX, BY, _, _}} -> 
       io:format("press: ~p~n", [Handler]),
@@ -57,12 +57,17 @@ move(none, _, _, _, _) -> true;
 move(drag, Handler, EV, Data, Morphic) ->
   {_, BX, BY} = EV,
   OrigT = Handler#handler.down,
-  {_, {OrigXDiff, OrigYDiff}} = OrigT,
-  self() ! {'data', Data#data{x = BX - OrigXDiff, y = BY - OrigYDiff}}.
+  case OrigT of
+    {_, {OrigXDiff, OrigYDiff}} ->
+     self() ! {'data', Data#data{x = BX - OrigXDiff, y = BY - OrigYDiff}};
+    _ -> true
+  end.
 
 up(none, _, _, _, _) -> true;
 up(drag, Handler, EV, Data, Morphic) ->
-  Morphic ! {'unfocus'}.
+  Morphic ! {'unfocus'},
+  NewHandler = Handler#handler{down = {drag, {}}},
+  self() ! {'handlers', NewHandler}.
 
 draw(Morphic, Display, Pix, Data) -> 
   Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
