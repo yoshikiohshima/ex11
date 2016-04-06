@@ -79,7 +79,6 @@ up(drag, Handler, EV, Data, Morphic) ->
 up(button, _, _, _, _) -> true.
 
 draw(Morphic, Display, Pix, Data) -> 
-  Color = xCreateGC(Display, [{function,'copy'},{line_width,5},{arc_mode,chord},{line_style,solid},
-                {graphics_exposures, false},{foreground, xColor(Display, Data#data.color)}]),
+  Color = xCreateGC(Display, [{function,'copy'}, {graphics_exposures, false},{foreground, xColor(Display, Data#data.color)}]),
   Rect = mkRectangle(Data#data.x, Data#data.y, Data#data.width, Data#data.height),
   xDo(Display, ePolyFillRectangle(Pix, Color, [Rect])).
