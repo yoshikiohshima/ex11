@@ -5,5 +5,5 @@
 newTimer(Morphic) ->  loop(Morphic).
 
 loop(Morphic) ->
-  receive after 30 -> Morphic ! {'display'} end,
+  receive after 30 -> Morphic ! display end,
   loop(Morphic).
