@@ -2,12 +2,13 @@
 -author(ohshima).
 -export([start/0,init/0]).
 -include("ex11_lib.hrl").
--import(ex11_lib, [xDo/2, xFlush/1, xCreateGC/2,xColor/2,mkRectangle/4,xCreateSimpleWindow/7,
-    eMapWindow/1,ePolyFillRectangle/3, xCreatePixmap/4, eCopyArea/9]).
+-import(ex11_lib, [xDo/2, xFlush/1, xCreateGC/2, xColor/2, mkRectangle/4,
+    xCreateSimpleWindow/7, eMapWindow/1, ePolyFillRectangle/3,
+    xCreatePixmap/4, eCopyArea/9]).
 
 -import(morph, [newMorph/3]).
 -import(timer, [newTimer/1]).
--record(data, {x, y, width, height, color}).
+-import(lasersocks, [startLaserSocks/0]).
 
 -define(containsPoint(X, Y, W, H, MX, MY),
   (X =< MX) andalso (MX < (X + W)) andalso (Y =< MY) andalso (MY < (Y + H))).
@@ -20,13 +21,15 @@ init() ->
   Pix = xCreatePixmap(Display, Win, 400, 400),
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
-  M = spawn(morph, newMorph, [self(), 300, 300]),
-  N = spawn(morph, newMorph, [self(), 350, 0]),
   Nil = spawn(morph, newMorph, [self(), 0, 0]),
-  Scene = [M, N],
+  M1 = spawn(morph, newMorph, [self(), 350, 0]),
+  M2 = spawn(morph, newMorph, [self(), 300, 0]),
+  M3 = spawn(morph, newMorph, [self(), 300, 300]),
+  Scene = [M1, M2, M3],
   Props = #{}, % {Pid => data}; created at every frame
-  M ! beDraggable,
-  N ! beNewButton,
+  M1 ! {beNewButton, newMorph, []},
+  M2 ! {beNewButton, recognize, [lasersocks]},
+  M3 ! beDraggable,
 
   Timer = spawn(timer, newTimer, [self()]),
 
@@ -35,8 +38,6 @@ init() ->
 
 loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts) ->
   receive
-    {'newMorph', Pid} ->
-      loop(Display, Win, Pix, [Pid | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {'focus', Pid} ->
       loop(Display, Win, Pix, Scene, Props, Pid, Nil, StartTime, LastRequestTime, Ts);
     {'unfocus'} ->
@@ -79,6 +80,19 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
     copyPix ->
       copyPix(Display, Win, Pix),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, Ts);
+    {newMorph, _} ->
+      M = spawn(morph, newMorph, [self(), 175, 180]),
+      M ! beDraggable,
+      loop(Display, Win, Pix, [M | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
+    {'recognize', [R]} ->
+       T = erlang:system_time() - StartTime,
+       P = spawn(R, startLaserSocks, []),
+       P ! {'recognize', Props, T, self()},
+       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
+    {'recognized', T, R, List} ->
+      io:format("recognized: ~p~n", [List]),
+       R ! {'game', List},
+       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     X ->
       io:format("X: ~p~n", [X]),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts)
@@ -90,7 +104,7 @@ draw(Display, Scene, Pix, T) ->
 
   Rect = mkRectangle(0, 0, 400, 400),
   xDo(Display, ePolyFillRectangle(Pix, Back, [Rect])),
-  lists:foreach(fun(M) -> 
+  lists:foreach(fun(M) ->
     M ! {'draw', T, self(), Display, Pix} end,
     Scene).
 
@@ -104,8 +118,8 @@ copyPix(Display, Win, Pix) ->
 target([], _, _, _, Nil) -> Nil;
 target([M|MS], X, Y, Props, Nil) ->
   Prop = (catch maps:get(M, Props)),
-  Val = is_record(Prop, data) andalso
-            ?containsPoint(Prop#data.x, Prop#data.y, Prop#data.width, Prop#data.height, X, Y),
+  Val = is_map(Prop) andalso
+            ?containsPoint(maps:get(x, Prop), maps:get(y, Prop), maps:get(width, Prop), maps:get(height, Prop), X, Y),
   case Val of
     true -> M;
     _ -> target(MS, X, Y, Props, Nil)

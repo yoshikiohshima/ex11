@@ -4,14 +4,14 @@
 -include("ex11_lib.hrl").
 -import(ex11_lib, [xDo/2, xCreateGC/2,xColor/2,mkRectangle/4, ePolyFillRectangle/3]).
 
--record(data, {x = 0, y = 0, width = 50, height = 40, color}).
 -record(handler, {down = {none, {}}, up = {none, {}}, move = {none, {}}}).
 
 newMorph(Morphic, X, Y) -> init(Morphic, X, Y).
 
 init(Morphic, X, Y) ->
   Color = 16#1010E0,
-  Data = #data{x=X, y=Y, color=Color},
+%  Data = #data{x=X, y=Y, color=Color},
+  Data = #{x=>X, y=>Y, color=>Color, width=>50, height=>40}, % x, y, color, width, height
   Handler = #handler{},
   % {down, up, move}.  Values are either zero or a record of {fun, params}.
   loop(Morphic, Data, Handler).
@@ -25,9 +25,9 @@ loop(Morphic, Data, Handler) ->
     beDraggable ->
       loop(Morphic, Data,
            Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}});
-    beNewButton ->
+    {beNewButton, N, List} ->
       loop(Morphic, Data,
-           Handler#handler{down={button, {}}, up={button, {}}, move={button, {}}});
+           Handler#handler{down={button, {N, List}}, up={button, {}}, move={button, {}}});
     {buttonPress, {P, BX, BY, _, _}} -> 
       {F, _} = Handler#handler.down,
       down(F, Handler, {P, BX, BY}, Data, Morphic),
@@ -50,14 +50,13 @@ loop(Morphic, Data, Handler) ->
 down(none, _, _, _, _) -> true;
 down(drag, Handler, EV, Data, Morphic) ->
   {_, BX, BY} = EV,
-  NewHandler = Handler#handler{down = {drag, {BX - Data#data.x, BY - Data#data.y}}},
+  NewHandler = Handler#handler{down = {drag, {BX - maps:get(x, Data), BY - maps:get(y, Data)}}},
   Morphic ! {'focus', self()},
   self() ! {'handlers', NewHandler};
-down(button, Handler, EV, Data, Morphic) ->
+down(button, Handler, EV, _, Morphic) ->
+  {_, Action} = Handler#handler.down,
   {_, BX, BY} = EV,
-  M = spawn(morph, newMorph, [Morphic, 175, 180]),
-  M ! beDraggable,
-  Morphic ! {'newMorph', M}.
+  Morphic ! Action.
 
 move(none, _, _, _, _) -> true;
 move(drag, Handler, EV, Data, Morphic) ->
@@ -65,7 +64,9 @@ move(drag, Handler, EV, Data, Morphic) ->
   OrigT = Handler#handler.down,
   case OrigT of
     {_, {OrigXDiff, OrigYDiff}} ->
-     self() ! {'data', Data#data{x = BX - OrigXDiff, y = BY - OrigYDiff}};
+      NewData = maps:put(y, (BY - OrigYDiff), Data),
+      NewNewData = maps:put(x, (BX - OrigXDiff), NewData),
+      self() ! {'data', NewNewData};
     _ -> true
   end;
 move(button, _, _, _, _) ->
@@ -79,6 +80,6 @@ up(drag, Handler, EV, Data, Morphic) ->
 up(button, _, _, _, _) -> true.
 
 draw(Morphic, Display, Pix, Data) -> 
-  Color = xCreateGC(Display, [{function,'copy'}, {graphics_exposures, false},{foreground, xColor(Display, Data#data.color)}]),
-  Rect = mkRectangle(Data#data.x, Data#data.y, Data#data.width, Data#data.height),
+  Color = xCreateGC(Display, [{function,'copy'}, {graphics_exposures, false},{foreground, xColor(Display, maps:get(color, Data))}]),
+  Rect = mkRectangle(maps:get(x, Data), maps:get(y, Data), maps:get(width, Data), maps:get(height, Data)),
   xDo(Display, ePolyFillRectangle(Pix, Color, [Rect])).
