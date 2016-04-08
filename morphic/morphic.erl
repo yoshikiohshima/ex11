@@ -6,7 +6,7 @@
     xCreateSimpleWindow/7, eMapWindow/1, ePolyFillRectangle/3,
     xCreatePixmap/4, eCopyArea/9]).
 
--import(morph, [newMorph/3]).
+-import(morph, [newMorph/6]).
 -import(timer, [newTimer/1]).
 -import(lasersocks, [startLaserSocks/0]).
 
@@ -21,15 +21,17 @@ init() ->
   Pix = xCreatePixmap(Display, Win, 400, 400),
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
-  Nil = spawn(morph, newMorph, [self(), 0, 0]),
-  M1 = spawn(morph, newMorph, [self(), 350, 0]),
-  M2 = spawn(morph, newMorph, [self(), 300, 0]),
-  M3 = spawn(morph, newMorph, [self(), 300, 300]),
-  Scene = [M1, M2, M3],
+  Nil = spawn(morph, newMorph, [self(), 0, 0, 0, 0, 16#000000]),
+  M1 = spawn(morph, newMorph, [self(), 350, 0, 20, 20, 16#80D0D0]),
+  M2 = spawn(morph, newMorph, [self(), 300, 0, 20, 20, 16#D080D0]),
+  M3 = spawn(morph, newMorph, [self(), 300, 300, 50, 40, 16#8080D0]),
+  M4 = spawn(morph, newMorph, [self(), 350, 340, 10, 10, 16#D0D080]),
+  Scene = [M1, M2, M3, M4],
   Props = #{}, % {Pid => data}; created at every frame
   M1 ! {beNewButton, newMorph, []},
   M2 ! {beNewButton, recognize, [lasersocks]},
   M3 ! beDraggable,
+  M4 ! {beResizer, M3},
 
   Timer = spawn(timer, newTimer, [self()]),
 
@@ -81,7 +83,7 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       copyPix(Display, Win, Pix),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, Ts);
     {newMorph, _} ->
-      M = spawn(morph, newMorph, [self(), 175, 180]),
+      M = spawn(morph, newMorph, [self(), 175, 180, 50, 40, 16#8080D0]),
       M ! beDraggable,
       loop(Display, Win, Pix, [M | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {'recognize', [R]} ->
@@ -90,7 +92,7 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
        P ! {'recognize', Props, T, self()},
        loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {'recognized', T, R, List} ->
-      io:format("recognized: ~p~n", [List]),
+      io:format("recognized: ~p from ~p~n", [List, R]),
        R ! {'game', List},
        loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     X ->
