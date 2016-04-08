@@ -9,9 +9,8 @@
 newMorph(Morphic, X, Y, W, H, C) -> init(Morphic, X, Y, W, H, C).
 
 init(Morphic, X, Y, W, H, C) ->
-  Color = 16#1010E0,
-  Data = #{x=>X, y=>Y, color=>Color, width=>W, height=>H}, % x, y, color, width, height
   Handler = #handler{}, % {down, up, move}.  Values are either zero or a record of {fun, params}.
+  Data = #{x=>X, y=>Y, color=>C, width=>W, height=>H, type=>'none'}, % x, y, color, width, height and handler type
   loop(Morphic, Data, Handler).
 
 loop(Morphic, Data, Handler) ->
@@ -21,24 +20,27 @@ loop(Morphic, Data, Handler) ->
     {'handlers', NewHandler} ->
       loop(Morphic, Data, NewHandler);
     beDraggable ->
-      loop(Morphic, Data,
+      NewData = maps:put(type, 'drag', Data),
+      loop(Morphic, NewData,
            Handler#handler{down={drag, {}}, up={drag, {}}, move={drag, {}}});
     {beNewButton, N, List} ->
-      loop(Morphic, Data,
+      NewData = maps:put(type, 'button', Data),
+      loop(Morphic, NewData,
            Handler#handler{down={button, {N, List}}, up={button, {}}, move={button, {}}});
     {beResizer, Target} ->
-      loop(Morphic, Data,
+      NewData = maps:put(type, 'resize', Data),
+      loop(Morphic, NewData,
            Handler#handler{down={resize, {}}, up={resize, {}}, move={resize, {Target, 0, 0}}});
     {buttonPress, {P, BX, BY, _, _}} -> 
-      {F, _} = Handler#handler.down,
+      F = maps:get(type, Data),
       down(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Data, Handler);
     {buttonMove, {P, BX, BY, _, _}} ->
-      {F, _} = Handler#handler.move,
+      F = maps:get(type, Data),
       move(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Data, Handler);
     {buttonRelease, {P, BX, BY, _, _}} ->
-      {F, _} = Handler#handler.up,
+      F = maps:get(type, Data),
       up(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Data, Handler);
     {draw, T, Morphic, Display, Pix} ->
@@ -46,7 +48,6 @@ loop(Morphic, Data, Handler) ->
       draw(Morphic, Display, Pix, Data),
       loop(Morphic, Data, Handler);
     {resizeBy, {DW, DH}} ->
-      io:format("resize: ~p, ~p~n", [DW, DH]),
       NewData =    maps:put(width, maps:get(width, Data) + DW, Data),
       NewNewData = maps:put(height, maps:get(height, Data) + DH, NewData),
       loop(Morphic, NewNewData, Handler);
@@ -61,7 +62,7 @@ down(drag, Handler, EV, Data, Morphic) ->
   self() ! {'handlers', NewHandler};
 down(button, Handler, EV, _, Morphic) ->
   {_, Action} = Handler#handler.down,
-  {_, BX, BY} = EV,
+%  {_, BX, BY} = EV,
   Morphic ! Action;
 down(resize, Handler, EV, Data, Morphic) ->
   {_, BX, BY} = EV,
@@ -71,7 +72,7 @@ down(resize, Handler, EV, Data, Morphic) ->
   self() ! {'handlers', NewHandler}.
 
 move(none, _, _, _, _) -> true;
-move(drag, Handler, EV, Data, Morphic) ->
+move(drag, Handler, EV, Data, _) ->
   {_, BX, BY} = EV,
   OrigT = Handler#handler.down,
   case OrigT of
@@ -83,17 +84,16 @@ move(drag, Handler, EV, Data, Morphic) ->
   end;
 move(button, _, _, _, _) ->
   true;
-move(resize, Handler, EV, Data, Morphic) ->
+move(resize, Handler, EV, Data, _) ->
   {_, BX, BY} = EV,
   MaybeTarget = Handler#handler.move,
-  io:format("target: ~p", [MaybeTarget]),
   case MaybeTarget of
     {_, {Target, PrevBX, PrevBY}} ->
       OrigT = Handler#handler.down,
       case OrigT of
         {_, {OrigBX, OrigBY, OrigX, OrigY}} ->
           NewData = maps:put(y, OrigY + (BY - OrigBY), Data),
-          NewNewData = maps:put(x, OrigX + (BX - OrigX), NewData),
+          NewNewData = maps:put(x, OrigX + (BX - OrigBX), NewData),
           self() ! {'data', NewNewData},
           NewHandler = Handler#handler{move = {resize, {Target, BX, BY}}},
           self() ! {'handlers', NewHandler},

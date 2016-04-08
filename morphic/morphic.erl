@@ -82,18 +82,24 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
     copyPix ->
       copyPix(Display, Win, Pix),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, Ts);
-    {newMorph, _} ->
-      M = spawn(morph, newMorph, [self(), 175, 180, 50, 40, 16#8080D0]),
+    {newMorph, Param} ->
+      case Param of
+        [] ->
+           RealParam = [175, 180, 50, 40, 16#8080D0];
+        _  ->
+           RealParam = Param
+      end,
+      M = spawn(morph, newMorph, [self() | RealParam]),
       M ! beDraggable,
+      R = spawn(morph, newMorph, [self(), 225, 220, 10, 10, 16#D0D080]),
+      R ! {'beResizer', M},
+      loop(Display, Win, Pix, [M, R | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
+    {addMorph, M} ->
       loop(Display, Win, Pix, [M | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
-    {'recognize', [R]} ->
+    {recognize, [R]} ->
        T = erlang:system_time() - StartTime,
        P = spawn(R, startLaserSocks, []),
        P ! {'recognize', Props, T, self()},
-       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
-    {'recognized', T, R, List} ->
-      io:format("recognized: ~p from ~p~n", [List, R]),
-       R ! {'game', List},
        loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     X ->
       io:format("X: ~p~n", [X]),

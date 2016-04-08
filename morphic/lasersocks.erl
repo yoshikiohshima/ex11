@@ -2,6 +2,8 @@
 -author(ohshima).
 -export([startLaserSocks/0]).
 
+-import(morph, [newMorph/6]).
+
 startLaserSocks() -> loop(#{}, false).
 
 compare({_, A}, {_, B}) ->
@@ -9,20 +11,74 @@ compare({_, A}, {_, B}) ->
   AY = maps:get(x, B),
   AX =< AY.
 
+isUserWidget(A) ->
+  {Pid, Data} = A,
+  case maps:get(type, Data) of
+    drag -> true;
+    _    -> false
+  end.
+
+gameStart([{Player1, Player1Data}, 
+           {Meter1, Meter1Data},
+           {StartButton, StartButtonData},
+           {Meter2, Meter2Data},
+           {Player2, Player2Data}], Morphic) ->
+  P1 = spawn(morph, newMorph,
+             [Morphic,
+              maps:get(x, Player1Data) + 3,
+              maps:get(y, Player1Data) + 3,
+              maps:get(width, Player1Data),
+              maps:get(height, Player1Data),
+              16#D0D0D0]),
+  Morphic ! {'addMorph', P1},
+  P2 = spawn(morph, newMorph,
+             [Morphic,
+              maps:get(x, Player2Data) + 3,
+              maps:get(y, Player2Data) + 3,
+              maps:get(width, Player2Data),
+              maps:get(height, Player2Data),
+              16#D0D0D0]),
+  Morphic ! {'addMorph', P2},
+  M1 = spawn(morph, newMorph,
+             [Morphic,
+              maps:get(x, Meter1Data) + 3,
+              maps:get(y, Meter1Data) + 3,
+              maps:get(width, Meter1Data),
+              maps:get(height, Meter1Data),
+              16#D0D0D0]),
+  Morphic ! {'addMorph', M1},
+  M2 = spawn(morph, newMorph,
+             [Morphic,
+              maps:get(x, Meter2Data) + 3,
+              maps:get(y, Meter2Data) + 3,
+              maps:get(width, Meter2Data),
+              maps:get(height, Meter2Data),
+              16#D0D0D0]),
+  Morphic ! {'addMorph', M2},
+  S = spawn(morph, newMorph,
+             [Morphic,
+              maps:get(x, StartButtonData) + 3,
+              maps:get(y, StartButtonData) + 3,
+              maps:get(width, StartButtonData),
+              maps:get(height, StartButtonData),
+              16#D0D0D0]),
+  Morphic ! {'addMorph', S},
+  {Player1, Meter1, StartButton, Meter2, Player2,
+   P1, M1, S, M2, P2}.
+
 loop(Widgets, GameStarted) ->
-  io:format("Widgets: ~p of ~p~n", [Widgets, self()]),
   receive
     {'recognize', Props, T, Morphic} ->
       List = maps:to_list(Props),
-      case length(List) of
+      Filtered = lists:filter(fun(A) -> isUserWidget(A) end, List),
+      case length(Filtered) of
         5 -> 
-          Sorted = lists:sort(fun(A, B) -> compare(A, B) end, List),
-          Morphic ! {'recognized', T, self(), lists:map(fun(A) -> {X, _} = A, X end, Sorted)};
-        _ -> true
+          Sorted = lists:sort(fun(A, B) -> compare(A, B) end, Filtered),
+          NewWidgets = gameStart(Sorted, Morphic);
+        _ ->
+          NewWidgets = Widgets
       end,
-      loop(Widgets, GameStarted);
-    {'game', [Player1, Meter1, StartButton, Meter2, Player2]} ->
-       loop(#{player1 => Player1, player2 => Player2, meter1 => Meter1, meter2 => Meter2, startButton => StartButton}, true);
+      loop(NewWidgets, GameStarted);
     X ->
       io:format("X: ~p~n", [X]),
       loop(Widgets, GameStarted)
