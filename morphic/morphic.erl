@@ -69,6 +69,7 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       target(Scene, BX, BY, Props, Nil) ! {'buttonRelease', E},
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {'tell', {Pid, T, Data}} ->
+      drawMorph(self(), Display, Pix, Data),
       NewTs = Ts - 1,
       case NewTs of
         0 -> copyPix(Display, Win, Pix),
@@ -84,8 +85,8 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
          draw(Display, Scene, Pix, T),
          loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, T, NewTs);
         _ ->
-         copyPix(Display, Win, Pix),
-         loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, 0)
+         %copyPix(Display, Win, Pix),
+         loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, 0, Ts)
        end;
     copyPix ->
       copyPix(Display, Win, Pix),
@@ -114,15 +115,22 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts)
   end.
 
+drawMorph(Morphic, Display, Pix, Data) ->
+  Color = xCreateGC(Display, [{function,'copy'},
+                              {graphics_exposures, false},
+                              {foreground, xColor(Display, maps:get(color, Data))}]),
+  Rect = mkRectangle(maps:get(x, Data), maps:get(y, Data),
+                     maps:get(width, Data), maps:get(height, Data)),
+  xDo(Display, ePolyFillRectangle(Pix, Color, [Rect])).
+
 draw(Display, Scene, Pix, T) ->
   Back = xCreateGC(Display, [{function,'copy'},
  	 {graphics_exposures, true}, {foreground, xColor(Display, ?gray)}]),
 
   Rect = mkRectangle(0, 0, 400, 400),
   xDo(Display, ePolyFillRectangle(Pix, Back, [Rect])),
-  lists:foreach(fun(M) ->
-    M ! {'draw', T, self(), Display, Pix} end,
-    Scene).
+  lists:foreach(fun(M) -> M ! {ask, T, self()} end,
+    lists:reverse(Scene)).
 
 copyPix(Display, Win, Pix) ->
   Copy = xCreateGC(Display, [{function,'copy'},

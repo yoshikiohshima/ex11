@@ -1,8 +1,6 @@
 -module(morph).
 -author(ohshima).
 -export([newMorph/6]).
--include("ex11_lib.hrl").
--import(ex11_lib, [xDo/2, xCreateGC/2,xColor/2,mkRectangle/4, ePolyFillRectangle/3]).
 
 -record(handler, {down = {none, {}}, up = {none, {}}, move = {none, {}}}).
 
@@ -45,9 +43,8 @@ loop(Morphic, Data, Handler) ->
       F = maps:get(type, Data),
       up(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Data, Handler);
-    {draw, T, Morphic, Display, Pix} ->
+    {ask, T, Morphic} ->
       Morphic ! {'tell', {self(), T, Data}},
-      draw(Morphic, Display, Pix, Data),
       loop(Morphic, Data, Handler);
     {resizeBy, {DW, DH}} ->
       NewData =    maps:put(width, maps:get(width, Data) + DW, Data),
@@ -128,8 +125,3 @@ up(resize, Handler, EV, Data, Morphic) ->
 up(remote, Handler, EV, Data, Morphic) ->
   {_, Recipient} = Handler#handler.up,
   Recipient ! {'buttonRelease', self()}.
-
-draw(Morphic, Display, Pix, Data) -> 
-  Color = xCreateGC(Display, [{function,'copy'}, {graphics_exposures, false},{foreground, xColor(Display, maps:get(color, Data))}]),
-  Rect = mkRectangle(maps:get(x, Data), maps:get(y, Data), maps:get(width, Data), maps:get(height, Data)),
-  xDo(Display, ePolyFillRectangle(Pix, Color, [Rect])).
