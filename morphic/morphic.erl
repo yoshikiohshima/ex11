@@ -24,14 +24,22 @@ init() ->
   Nil = spawn(morph, newMorph, [self(), 0, 0, 0, 0, 16#000000]),
   M1 = spawn(morph, newMorph, [self(), 350, 0, 20, 20, 16#80D0D0]),
   M2 = spawn(morph, newMorph, [self(), 300, 0, 20, 20, 16#D080D0]),
-  M3 = spawn(morph, newMorph, [self(), 300, 300, 50, 40, 16#8080D0]),
-  M4 = spawn(morph, newMorph, [self(), 350, 340, 10, 10, 16#D0D080]),
-  Scene = [M1, M2, M3, M4],
+  Scene = [M1, M2],
   Props = #{}, % {Pid => data}; created at every frame
   M1 ! {beNewButton, newMorph, []},
   M2 ! {beNewButton, recognize, [lasersocks]},
-  M3 ! beDraggable,
-  M4 ! {beResizer, M3},
+
+  Ms = [
+              [100, 100, 50, 150, 16#8080D0],
+              [170, 150, 30, 80, 16#8080D0],
+              [300, 100, 50, 150, 16#8080D0],
+              [220, 100, 30, 80, 16#8080D0],
+              [180, 50, 50, 50, 16#8080D0]
+       ],
+
+  lists:foreach(fun(P) ->
+    self() ! {newMorph, P}
+   end, Ms),
 
   Timer = spawn(timer, newTimer, [self()]),
 
@@ -90,6 +98,7 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
            RealParam = Param
       end,
       M = spawn(morph, newMorph, [self() | RealParam]),
+      io:format("new morph ~p~n", [M]),
       M ! beDraggable,
       R = spawn(morph, newMorph, [self(), 225, 220, 10, 10, 16#D0D080]),
       R ! {'beResizer', M},
@@ -97,10 +106,10 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
     {addMorph, M} ->
       loop(Display, Win, Pix, [M | Scene], Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     {recognize, [R]} ->
-       T = erlang:system_time() - StartTime,
-       P = spawn(R, startLaserSocks, []),
-       P ! {'recognize', Props, T, self()},
-       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
+      T = erlang:system_time() - StartTime,
+      P = spawn(R, startLaserSocks, []),
+      P ! {'recognize', Props, T, self()},
+      loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts);
     X ->
       io:format("X: ~p~n", [X]),
       loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts)

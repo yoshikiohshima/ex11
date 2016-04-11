@@ -16,9 +16,12 @@ init(Morphic, X, Y, W, H, C) ->
 loop(Morphic, Data, Handler) ->
   receive
     {'data', NewData} ->
-       loop(Morphic, NewData, Handler);
+      loop(Morphic, NewData, Handler);
     {'handlers', NewHandler} ->
-      loop(Morphic, Data, NewHandler);
+      io:format("new handler ~p, ~p~n", [self(), NewHandler]),
+      {Type, _} = NewHandler#handler.down,
+      NewData = maps:put(type, Type, Data),
+      loop(Morphic, NewData, NewHandler);
     beDraggable ->
       NewData = maps:put(type, 'drag', Data),
       loop(Morphic, NewData,
@@ -31,7 +34,7 @@ loop(Morphic, Data, Handler) ->
       NewData = maps:put(type, 'resize', Data),
       loop(Morphic, NewData,
            Handler#handler{down={resize, {}}, up={resize, {}}, move={resize, {Target, 0, 0}}});
-    {buttonPress, {P, BX, BY, _, _}} -> 
+    {buttonPress, {P, BX, BY, _, _}} ->
       F = maps:get(type, Data),
       down(F, Handler, {P, BX, BY}, Data, Morphic),
       loop(Morphic, Data, Handler);
@@ -50,6 +53,11 @@ loop(Morphic, Data, Handler) ->
     {resizeBy, {DW, DH}} ->
       NewData =    maps:put(width, maps:get(width, Data) + DW, Data),
       NewNewData = maps:put(height, maps:get(height, Data) + DH, NewData),
+      io:format("resized ~p~n", [NewNewData]),
+      loop(Morphic, NewNewData, Handler);
+    {resizeTo, {W, H}} ->
+      NewData =    maps:put(width, W, Data),
+      NewNewData = maps:put(height, H, NewData),
       loop(Morphic, NewNewData, Handler);
     _ -> loop(Morphic, Data, Handler)
   end.
@@ -69,7 +77,10 @@ down(resize, Handler, EV, Data, Morphic) ->
   {_, {Target, _, _}} = Handler#handler.move,
   NewHandler = Handler#handler{down = {resize, {BX, BY, maps:get(x, Data), maps:get(y, Data)}}, move = {resize, {Target, BX, BY}}},
   Morphic ! {'focus', self()},
-  self() ! {'handlers', NewHandler}.
+  self() ! {'handlers', NewHandler};
+down(remote, Handler, EV, Data, Morphic) ->
+  {_, Recipient} = Handler#handler.down,
+  Recipient ! {'buttonPress', self()}.
 
 move(none, _, _, _, _) -> true;
 move(drag, Handler, EV, Data, _) ->
@@ -101,7 +112,10 @@ move(resize, Handler, EV, Data, _) ->
         _ -> true
       end;
     _ -> true
-  end.
+  end;
+move(remote, Handler, EV, Data, Morphic) ->
+  {_, Recipient} = Handler#handler.move,
+  Recipient ! {'buttonMove', self()}.
 
 up(none, _, _, _, _) -> true;
 up(drag, Handler, EV, Data, Morphic) ->
@@ -112,7 +126,10 @@ up(button, _, _, _, _) -> true;
 up(resize, Handler, EV, Data, Morphic) ->
   Morphic ! {'unfocus'},
   NewHandler = Handler#handler{down = {resize, {}}},
-  self() ! {'handlers', NewHandler}.
+  self() ! {'handlers', NewHandler};
+up(remote, Handler, EV, Data, Morphic) ->
+  {_, Recipient} = Handler#handler.up,
+  Recipient ! {'buttonRelease', self()}.
 
 draw(Morphic, Display, Pix, Data) -> 
   Color = xCreateGC(Display, [{function,'copy'}, {graphics_exposures, false},{foreground, xColor(Display, maps:get(color, Data))}]),

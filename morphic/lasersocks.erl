@@ -3,8 +3,9 @@
 -export([startLaserSocks/0]).
 
 -import(morph, [newMorph/6]).
+-record(handler, {down = {none, {}}, up = {none, {}}, move = {none, {}}}).
 
-startLaserSocks() -> loop(#{}, false).
+startLaserSocks() -> loop(#{}, false, #{}).
 
 compare({_, A}, {_, B}) ->
   AX = maps:get(x, A),
@@ -12,7 +13,7 @@ compare({_, A}, {_, B}) ->
   AX =< AY.
 
 isUserWidget(A) ->
-  {Pid, Data} = A,
+  {_, Data} = A,
   case maps:get(type, Data) of
     drag -> true;
     _    -> false
@@ -63,10 +64,14 @@ gameStart([{Player1, Player1Data},
               maps:get(height, StartButtonData),
               16#D0D0D0]),
   Morphic ! {'addMorph', S},
-  {Player1, Meter1, StartButton, Meter2, Player2,
-   P1, M1, S, M2, P2}.
 
-loop(Widgets, GameStarted) ->
+  Player1 ! {'handlers', #handler{down = {remote, self()}, move = {remote, self()}, up = {remote, self()}}},
+  Player2 ! {'handlers', #handler{down = {remote, self()}, move = {remote, self()}, up = {remote, self()}}},
+
+  {Player1, Meter1, StartButton, Meter2, Player2,
+   P1, M1, S, M2, P2, Meter1Data, Meter2Data}.
+
+loop(Widgets, GameStarted, State) ->
   receive
     {'recognize', Props, T, Morphic} ->
       List = maps:to_list(Props),
@@ -78,8 +83,26 @@ loop(Widgets, GameStarted) ->
         _ ->
           NewWidgets = Widgets
       end,
-      loop(NewWidgets, GameStarted);
+      loop(NewWidgets, GameStarted, State);
+    {'buttonPress', M} ->
+      {Player1, Meter1, StartButton, Meter2, Player2,
+       P1, M1, S, M2, P2, M1Data, M2Data} = Widgets,
+      io:format("button ~p, ~p~n", [M, Player1]),
+      case M of
+        Player1
+          ->
+           io:format("is player1~n", []),
+           M1 ! {'resizeBy', {0, 2}};
+        Player2
+          -> M2 ! {'resizeBy', {0, 2}};
+        StartButton ->
+          W1 = maps:get(width, M1Data),
+          M1 ! {'resizeTo', {W1, 2}},
+          W2 = maps:get(width, M2Data),
+          M2 ! {'resizeTo', {W2, 2}};
+        _ -> true
+      end;
     X ->
       io:format("X: ~p~n", [X]),
-      loop(Widgets, GameStarted)
+      loop(Widgets, GameStarted, State)
   end.
