@@ -98,7 +98,6 @@ loop(Display, Win, Pix, Scene, Props, Focus, Nil, StartTime, LastRequestTime, Ts
            RealParam = Param
       end,
       M = spawn(morph, newMorph, [self() | RealParam]),
-      io:format("new morph ~p~n", [M]),
       M ! beDraggable,
       R = spawn(morph, newMorph, [self(), 225, 220, 10, 10, 16#D0D080]),
       R ! {'beResizer', M},

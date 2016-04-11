@@ -18,7 +18,6 @@ loop(Morphic, Data, Handler) ->
     {'data', NewData} ->
       loop(Morphic, NewData, Handler);
     {'handlers', NewHandler} ->
-      io:format("new handler ~p, ~p~n", [self(), NewHandler]),
       {Type, _} = NewHandler#handler.down,
       NewData = maps:put(type, Type, Data),
       loop(Morphic, NewData, NewHandler);
@@ -53,7 +52,6 @@ loop(Morphic, Data, Handler) ->
     {resizeBy, {DW, DH}} ->
       NewData =    maps:put(width, maps:get(width, Data) + DW, Data),
       NewNewData = maps:put(height, maps:get(height, Data) + DH, NewData),
-      io:format("resized ~p~n", [NewNewData]),
       loop(Morphic, NewNewData, Handler);
     {resizeTo, {W, H}} ->
       NewData =    maps:put(width, W, Data),

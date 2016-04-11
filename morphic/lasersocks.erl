@@ -67,6 +67,7 @@ gameStart([{Player1, Player1Data},
 
   Player1 ! {'handlers', #handler{down = {remote, self()}, move = {remote, self()}, up = {remote, self()}}},
   Player2 ! {'handlers', #handler{down = {remote, self()}, move = {remote, self()}, up = {remote, self()}}},
+  StartButton ! {'handlers', #handler{down = {remote, self()}, move = {remote, self()}, up = {remote, self()}}},
 
   {Player1, Meter1, StartButton, Meter2, Player2,
    P1, M1, S, M2, P2, Meter1Data, Meter2Data}.
@@ -87,12 +88,9 @@ loop(Widgets, GameStarted, State) ->
     {'buttonPress', M} ->
       {Player1, Meter1, StartButton, Meter2, Player2,
        P1, M1, S, M2, P2, M1Data, M2Data} = Widgets,
-      io:format("button ~p, ~p~n", [M, Player1]),
       case M of
         Player1
-          ->
-           io:format("is player1~n", []),
-           M1 ! {'resizeBy', {0, 2}};
+          -> M1 ! {'resizeBy', {0, 2}};
         Player2
           -> M2 ! {'resizeBy', {0, 2}};
         StartButton ->
@@ -101,7 +99,8 @@ loop(Widgets, GameStarted, State) ->
           W2 = maps:get(width, M2Data),
           M2 ! {'resizeTo', {W2, 2}};
         _ -> true
-      end;
+      end,
+      loop(Widgets, GameStarted, State);
     X ->
       io:format("X: ~p~n", [X]),
       loop(Widgets, GameStarted, State)
