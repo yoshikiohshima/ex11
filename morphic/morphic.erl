@@ -17,8 +17,8 @@ start() -> spawn(?MODULE,init,[]).
 
 init() -> 
   {ok, Display} = ex11_lib:xStart("3.1"),
-  Win = xCreateSimpleWindow(Display, 400, 0, 400, 400, ?XC_arrow, xColor(Display,?gray)),
-  Pix = xCreatePixmap(Display, Win, 400, 400),
+  Win = xCreateSimpleWindow(Display, 400, 0, 800, 600, ?XC_arrow, xColor(Display,?gray)),
+  Pix = xCreatePixmap(Display, Win, 800, 600),
   xDo(Display, eMapWindow(Win)),
   xFlush(Display),
   Nil = spawn(morph, newMorph, [self(), 0, 0, 0, 0, 16#000000]),
@@ -127,7 +127,7 @@ draw(Display, Scene, Pix, T) ->
   Back = xCreateGC(Display, [{function,'copy'},
  	 {graphics_exposures, true}, {foreground, xColor(Display, ?gray)}]),
 
-  Rect = mkRectangle(0, 0, 400, 400),
+  Rect = mkRectangle(0, 0, 800, 600),
   xDo(Display, ePolyFillRectangle(Pix, Back, [Rect])),
   lists:foreach(fun(M) -> M ! {ask, T, self()} end,
     lists:reverse(Scene)).
@@ -136,7 +136,7 @@ copyPix(Display, Win, Pix) ->
   Copy = xCreateGC(Display, [{function,'copy'},
                              {graphics_exposures, true},
 			     {foreground, xColor(Display, ?white)}]),
-  xDo(Display, eCopyArea(Pix, Win, Copy, 0, 0, 0, 0, 400, 400)),
+  xDo(Display, eCopyArea(Pix, Win, Copy, 0, 0, 0, 0, 800, 600)),
   xFlush(Display).
 
 target([], _, _, _, Nil) -> Nil;
